@@ -1,0 +1,374 @@
+/*
+  СТИЛИ ПРИЛОЖЕНИЯ
+
+  1. ПЕРЕМЕННЫЕ (токены). Все цвета объявлены ОДИН раз в :root как
+     --имя: значение, а дальше используются через var(--имя).
+     Аналогия: палитра у художника. Картину рисуют красками из палитры,
+     и чтобы сделать "ночную" версию, достаточно заменить краски
+     в палитре, а не перерисовывать картину.
+
+  2. ТЁМНАЯ ТЕМА — тот же список переменных, но с тёмными значениями,
+     включается, когда на <html> стоит data-theme="dark" (см. useTheme.ts).
+
+  Фирменный зелёный БГУФК взят с их логотипа: #00703C.
+  В тёмной теме тот же зелёный слишком тёмный для текста на тёмном фоне,
+  поэтому для текста берём более светлый оттенок (--green-text).
+*/
+
+:root {
+  --green: #00703C;            /* фирменный зелёный — фон виджета, кнопки */
+  --green-text: #00703C;       /* зелёный для текста и акцентов */
+  --green-soft: #E3F1E9;       /* бледно-зелёный — подсветка "сегодня" */
+  --on-green: #FFFFFF;         /* цвет текста на зелёном */
+
+  --bg: #F3F6F4;               /* фон экрана (чуть зеленоватый серый) */
+  --surface: #FFFFFF;          /* фон карточек */
+  --text: #13201A;             /* основной текст */
+  --muted: #5F6F66;            /* второстепенный текст */
+  --border: #DCE5DF;           /* тонкие линии */
+
+  --radius: 16px;              /* скругление карточек */
+  --nav-height: 64px;          /* высота нижнего меню */
+
+  /* Системные шрифты: на iPhone будет SF Pro, на Android — Roboto.
+     Почему не свой шрифт: быстрее грузится и выглядит "родным". */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;  /* убрать серую вспышку при тапе на iOS */
+}
+
+:root[data-theme="dark"] {
+  --green: #0B6B3D;
+  --green-text: #4CC786;
+  --green-soft: #15291F;
+  --on-green: #FFFFFF;
+
+  --bg: #0E1411;
+  --surface: #171F1B;
+  --text: #E8EFEB;
+  --muted: #93A39A;
+  --border: #26322C;
+  color-scheme: dark;          /* чтобы поля ввода и скроллбары тоже стали тёмными */
+}
+
+/* box-sizing: border-box — ширина элемента включает отступы и рамку.
+   Без этого width: 100% + padding вылезает за экран. */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  min-height: 100vh;
+}
+
+h1, h2, h3, p { margin: 0; }
+button { font: inherit; color: inherit; cursor: pointer; }
+ul { list-style: none; margin: 0; padding: 0; }
+a { color: var(--green-text); }
+
+/* ---------- Каркас экрана ---------- */
+
+.screen {
+  max-width: 560px;            /* на планшете/ПК не растягиваемся на всю ширину */
+  margin: 0 auto;
+  /* отступ снизу = высота меню + "безопасная зона" iPhone (полоска внизу) */
+  padding: 20px 16px calc(var(--nav-height) + 24px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.screen.center { min-height: 70vh; justify-content: center; text-align: center; }
+
+.screen-title { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
+.screen-subtitle { color: var(--muted); margin-top: -6px; }
+.section-title {
+  font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--muted); margin-top: 12px;
+}
+.muted { color: var(--muted); }
+.small { font-size: 14px; }
+.center-text { text-align: center; padding: 24px 0; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ---------- Кнопки ---------- */
+
+.button-primary {
+  width: 100%;
+  min-height: 52px;            /* палец попадает легко: ≥44px по рекомендациям Apple */
+  border: 0;
+  border-radius: 14px;
+  background: var(--green);
+  color: var(--on-green);
+  font-size: 17px;
+  font-weight: 700;
+}
+.button-primary:active { transform: scale(0.98); }
+
+.button-secondary {
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--green-text);
+  font-weight: 600;
+}
+
+/* ---------- Приветствие ---------- */
+
+.welcome { min-height: 100vh; justify-content: center; gap: 16px; padding-bottom: 32px; }
+.welcome-mark { color: var(--green-text); }
+.welcome-title { font-size: 34px; line-height: 1.1; font-weight: 800; letter-spacing: -0.02em; }
+.welcome-text { color: var(--muted); font-size: 17px; line-height: 1.45; margin-bottom: 12px; }
+
+.disclaimer { font-size: 13px; line-height: 1.45; color: var(--muted); }
+
+/* ---------- Списки выбора ---------- */
+
+.list { display: flex; flex-direction: column; gap: 8px; }
+.list-item {
+  width: 100%;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-align: left;
+}
+.list-item-main { flex: 1; font-weight: 700; font-size: 17px; }
+.list-item-meta { color: var(--muted); font-size: 14px; }
+.list-item svg { color: var(--muted); }
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  min-height: 48px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  color: var(--muted);
+}
+.search:focus-within { border-color: var(--green-text); }
+.search input {
+  flex: 1;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 17px;             /* ≥16px — иначе iPhone приближает страницу при фокусе */
+}
+
+/* Сетка групп: столько колонок, сколько влезает при ширине ≥ 140px */
+.group-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+.group-chip {
+  width: 100%;
+  min-height: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  text-align: left;
+}
+.group-chip:active { border-color: var(--green-text); }
+.group-code { font-size: 20px; font-weight: 800; }
+.group-spec { font-size: 13px; color: var(--muted); }
+
+/* ---------- Экран "Сегодня" ---------- */
+
+.today-date { color: var(--green-text); font-weight: 600; }
+.hero-caption {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 600; color: var(--muted); margin: 4px 0 8px;
+}
+.live-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #E5484D;
+  animation: pulse 1.6s ease-in-out infinite;   /* мигающая "запись" — пара идёт */
+}
+@keyframes pulse { 50% { opacity: 0.3; } }
+
+/* Большой виджет пары */
+.hero-card {
+  position: relative;
+  display: flex;
+  gap: 16px;
+  padding: 20px 18px 24px;
+  border-radius: 20px;
+  background: var(--green);
+  color: var(--on-green);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.hero-time {
+  display: flex; flex-direction: column;
+  font-size: 22px; font-weight: 800;
+  font-variant-numeric: tabular-nums;  /* цифры одинаковой ширины — время не "прыгает" */
+  min-width: 64px;
+}
+.hero-time-end { font-size: 16px; font-weight: 600; opacity: 0.75; }
+.hero-body { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.hero-subject { font-size: 22px; line-height: 1.2; font-weight: 800; overflow-wrap: anywhere; }
+.hero-line { font-size: 15px; line-height: 1.35; overflow-wrap: anywhere; }
+.hero-label {
+  display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.7;
+}
+.hero-progress {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: rgb(255 255 255 / 0.2);
+}
+.hero-progress > div { height: 100%; background: var(--on-green); }
+
+.empty-card {
+  padding: 24px 18px;
+  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.empty-title { font-size: 20px; font-weight: 800; }
+
+.rest { display: flex; flex-direction: column; gap: 8px; }
+
+/* ---------- Строка пары (компактная) ---------- */
+
+.lesson-row {
+  display: flex;
+  gap: 14px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+.lesson-past { opacity: 0.5; }          /* прошедшие пары — бледные */
+.lesson-time {
+  display: flex; flex-direction: column;
+  min-width: 48px;
+  font-weight: 700; font-variant-numeric: tabular-nums;
+}
+.lesson-time-end { color: var(--muted); font-weight: 500; font-size: 14px; }
+.lesson-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.lesson-subject { font-size: 16px; font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
+.lesson-details { font-size: 14px; color: var(--muted); line-height: 1.35; overflow-wrap: anywhere; }
+
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag {
+  font-size: 12px; font-weight: 600;
+  padding: 2px 8px; border-radius: 999px;
+  background: var(--green-soft); color: var(--green-text);
+}
+.tag-on-green { background: rgb(255 255 255 / 0.18); color: var(--on-green); }
+
+/* ---------- Экран "Неделя" ---------- */
+
+.segmented {
+  display: flex;
+  padding: 4px;
+  gap: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+.segment {
+  flex: 1;
+  min-height: 40px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 15px;
+}
+.segment.active { background: var(--green); color: var(--on-green); }
+
+.week-list { display: flex; flex-direction: column; gap: 10px; }
+.week-day {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  scroll-margin: 24px;        /* отступ при автопрокрутке к "сегодня" */
+}
+/* Сегодняшний день подсвечен */
+.week-day.today { background: var(--green-soft); border: 2px solid var(--green-text); }
+.week-date {
+  display: flex; flex-direction: column; align-items: center;
+  min-width: 44px; padding-top: 4px;
+}
+.week-date-num { font-size: 24px; font-weight: 800; line-height: 1; }
+.week-date-wd { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; }
+.week-day.today .week-date-num, .week-day.today .week-date-wd { color: var(--green-text); }
+.week-lessons { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.week-lessons .muted { padding-top: 8px; }
+/* Внутри недели строки пар без своей рамки — день уже в карточке */
+.week-lessons .lesson-row { padding: 6px 0; border: 0; background: transparent; border-radius: 0; }
+.week-lessons .lesson-row + .lesson-row { border-top: 1px solid var(--border); padding-top: 10px; }
+
+/* ---------- Настройки ---------- */
+
+.settings-group { flex-direction: row; align-items: center; justify-content: space-between; gap: 12px; }
+.settings-group-code { font-size: 24px; font-weight: 800; }
+
+/* ---------- Нижнее меню ---------- */
+
+.bottom-nav {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 12px env(safe-area-inset-bottom);
+  min-height: var(--nav-height);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+.nav-item {
+  flex: 1;
+  max-width: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.nav-item.active { color: var(--green-text); }
+
+.offline-banner {
+  position: sticky; top: 0; z-index: 1;
+  padding: 8px 16px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  background: #FFF4D6;
+  color: #6B4E00;
+}

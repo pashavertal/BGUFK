@@ -1,0 +1,88 @@
+# ==============================================================================
+#  АВТООБНОВЛЕНИЕ РАСПИСАНИЯ И ПУБЛИКАЦИЯ САЙТА
+#
+#  GitHub Actions — бесплатный "робот" GitHub, который по расписанию или по
+#  событию запускает компьютер в облаке и выполняет наши шаги.
+#  Аналогия: будильник + помощник. Каждые 3 часа будильник звенит, помощник
+#  встаёт, сходит на сайт БГУФК за новыми PDF, перепишет их в JSON,
+#  соберёт мини-апп и повесит свежую версию на GitHub Pages.
+#
+#  Почему мы НЕ храним JSON с расписанием в репозитории:
+#  они пересоздаются при каждом запуске. Если парсер упадёт (сайт БГУФК
+#  лежит), публикация просто не произойдёт, и на GitHub Pages останется
+#  ПРОШЛАЯ рабочая версия. Пользователи ничего не заметят.
+# ==============================================================================
+
+name: Обновить расписание и опубликовать
+
+on:
+  # По расписанию (cron). Время — UTC! "17 */3 * * *" = в 17 минут каждого
+  # третьего часа. 17 минут, а не 00 — потому что ровно в начале часа на
+  # GitHub очередь из тысяч задач, и запуск может опоздать.
+  schedule:
+    - cron: "17 */3 * * *"
+  # Кнопка "Run workflow" во вкладке Actions — запустить вручную.
+  workflow_dispatch:
+  # При каждом push в main — чтобы изменения кода сразу попадали на сайт.
+  push:
+    branches: [main]
+
+# Права, которые нужны для публикации на GitHub Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Если запуск уже идёт, новый подождёт, а не будет публиковать параллельно.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Скачать код репозитория
+        uses: actions/checkout@v4
+
+      - name: Установить Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: parser/requirements.txt
+
+      - name: Установить библиотеки парсера
+        run: pip install -r parser/requirements.txt
+
+      - name: Запустить парсер (PDF -> JSON)
+        run: python parser/parse_schedule.py
+
+      - name: Установить Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Собрать мини-апп
+        working-directory: web
+        run: |
+          npm ci
+          npm run build
+
+      - name: Подготовить файлы для Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Опубликовать на GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
