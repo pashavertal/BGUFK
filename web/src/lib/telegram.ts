@@ -75,6 +75,12 @@ export function showBackButton(onBack: () => void): () => void {
   }
 }
 
+/** Открыть ссылку t.me (чат, канал): в Telegram — сразу нужный чат, иначе в новой вкладке */
+export function openTelegramLink(url: string): void {
+  if (tg && supports('6.1')) tg.openTelegramLink(url)
+  else window.open(url, '_blank', 'noopener')
+}
+
 /** Открыть ссылку: в Telegram — во встроенном браузере, иначе в новой вкладке */
 export function openLink(url: string): void {
   if (tg && isInsideTelegram) tg.openLink(url)

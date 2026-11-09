@@ -28,7 +28,7 @@
   --border: #DCE5DF;           /* тонкие линии */
 
   --radius: 16px;              /* скругление карточек */
-  --nav-height: 64px;          /* высота нижнего меню */
+  --nav-height: 80px;          /* высота нижнего меню вместе с отступом от края экрана */
 
   /* Системные шрифты: на iPhone будет SF Pro, на Android — Roboto.
      Почему не свой шрифт: быстрее грузится и выглядит "родным". */
@@ -423,8 +423,9 @@ a { color: var(--green-text); }
 /* Сегодняшний день подсвечен */
 .week-day.today { background: var(--green-soft); border: 2px solid var(--green-text); }
 .week-date {
-  display: flex; flex-direction: column; align-items: center;
-  min-width: 44px; padding-top: 4px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  align-self: center;          /* число и день недели — по центру карточки по высоте */
+  min-width: 44px;
 }
 .week-date-num { font-size: 24px; font-weight: 800; line-height: 1; }
 .week-date-wd { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; }
@@ -439,35 +440,50 @@ a { color: var(--green-text); }
 
 .settings-group { flex-direction: row; align-items: center; justify-content: space-between; gap: 12px; }
 .settings-group-code { font-size: 24px; font-weight: 800; }
+.settings-feedback-title { font-size: 17px; font-weight: 700; margin-bottom: 2px; }
+.settings-group .button-secondary { flex-shrink: 0; }
 
 /* ---------- Нижнее меню ---------- */
 
+/*
+  Плавающая зелёная панель: сразу видна на любом экране и в любой теме.
+  Активная вкладка — белая "таблетка" с зелёной иконкой, остальные —
+  белые иконки на зелёном. Так пользователь не ищет меню: оно самый
+  яркий элемент внизу экрана.
+*/
 .bottom-nav {
   position: fixed;
-  left: 0; right: 0; bottom: 0;
+  left: 12px; right: 12px;
+  bottom: calc(10px + env(safe-area-inset-bottom));
+  max-width: 536px;
+  margin: 0 auto;
+  height: 66px;
   display: flex;
-  justify-content: center;
-  gap: 8px;
-  padding: 6px 12px env(safe-area-inset-bottom);
-  min-height: var(--nav-height);
-  background: var(--surface);
-  border-top: 1px solid var(--border);
+  gap: 6px;
+  padding: 6px;
+  background: var(--green);
+  border-radius: 24px;
+  box-shadow: 0 8px 28px rgba(0, 70, 35, 0.35);
+  z-index: 10;
 }
 .nav-item {
   flex: 1;
-  max-width: 160px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 3px;
   border: 0;
+  border-radius: 18px;
   background: transparent;
-  color: var(--muted);
+  color: rgba(255, 255, 255, 0.78);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
+  transition: background-color .15s, color .15s, transform .1s;
 }
-.nav-item.active { color: var(--green-text); }
+.nav-item svg { width: 24px; height: 24px; }
+.nav-item.active { background: #FFFFFF; color: #00703C; }
+.nav-item:active { transform: scale(0.95); }
 
 .offline-banner {
   position: sticky; top: 0; z-index: 1;

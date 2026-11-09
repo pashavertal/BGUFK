@@ -4,7 +4,10 @@
   Плюс блок "О приложении" с пометкой о неофициальности и источником данных.
 */
 import { Disclaimer } from '../components/Disclaimer'
-import { hapticSelect } from '../lib/telegram'
+import { hapticSelect, openTelegramLink } from '../lib/telegram'
+
+/** Куда пишут об ошибках в расписании и предложения */
+const FEEDBACK_URL = 'https://t.me/Runnwayy'
 import type { GroupSchedule, ThemePreference } from '../types'
 
 const THEMES: { id: ThemePreference; label: string }[] = [
@@ -59,11 +62,22 @@ export function Settings({ groupCode, schedule, theme, onThemeChange, onChangeGr
       </div>
       <p className="muted small">«Авто» — тема меняется вместе с темой Telegram.</p>
 
+      <h2 className="section-title">Обратная связь</h2>
+      <div className="card settings-group">
+        <div>
+          <p className="settings-feedback-title">Нашёл ошибку?</p>
+          <p className="muted small">Неверная пара, нет группы или есть идея — напиши, исправим.</p>
+        </div>
+        <button type="button" className="button-secondary" onClick={() => openTelegramLink(FEEDBACK_URL)}>
+          Написать
+        </button>
+      </div>
+
       <h2 className="section-title">О приложении</h2>
       <div className="card">
         <Disclaimer />
         <p className="muted small">
-          Мы ничего не собираем: выбранная группа и тема хранятся только на этом телефоне.
+          Выбранная группа и тема хранятся только на этом телефоне. Мы считаем только анонимное число открытий по группам — без имён и Telegram-аккаунтов.
         </p>
         {updated && <p className="muted small">Данные обновлены: {updated}</p>}
       </div>

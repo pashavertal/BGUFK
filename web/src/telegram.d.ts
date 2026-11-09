@@ -47,6 +47,8 @@ interface TelegramWebApp {
   /** Зафиксировать текущую ориентацию экрана (Telegram 8.0+) */
   lockOrientation(): void
   openLink(url: string): void
+  /** Открыть ссылку t.me прямо в Telegram, не закрывая мини-апп (6.1+) */
+  openTelegramLink(url: string): void
   onEvent(event: 'themeChanged', callback: () => void): void
   offEvent(event: 'themeChanged', callback: () => void): void
   BackButton: TelegramBackButton

@@ -13,10 +13,11 @@
   Почему не Redux/Zustand и т.п.: состояния у нас всего два поля,
   обычного useState хватает с запасом. Лишние библиотеки — лишняя сложность.
 */
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { BottomNav, type Tab } from './components/BottomNav'
 import { useSchedule } from './hooks/useSchedule'
 import { useTheme } from './hooks/useTheme'
+import { trackOpen } from './lib/stats'
 import { KEYS, load, remove, save } from './lib/storage'
 import { Onboarding } from './screens/Onboarding'
 import { Settings } from './screens/Settings'
@@ -83,6 +84,14 @@ function MainScreens({ group, tab, onTab, theme, onThemeChange, onChangeGroup }:
   onChangeGroup: () => void
 }) {
   const { schedule, offline, error } = useSchedule(group)
+
+  // Статистика: одно открытие на группу за запуск (не при каждой смене вкладки).
+  const tracked = useRef<string | null>(null)
+  useEffect(() => {
+    if (!schedule || tracked.current === schedule.code) return
+    tracked.current = schedule.code
+    trackOpen(schedule.code, schedule.faculty, schedule.course)
+  }, [schedule])
 
   let content
   if (tab === 'settings') {
