@@ -29,6 +29,7 @@ export interface Lesson {
 export interface Day {
   off: boolean
   lessons: Lesson[]
+  note?: string   // вместо пар, например "Производственная педагогическая практика (6 недель)"
 }
 
 /** "Тетрадка" одной группы — файл data/groups/1101.json */

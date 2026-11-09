@@ -57,11 +57,40 @@
    Без этого width: 100% + padding вылезает за экран. */
 *, *::before, *::after { box-sizing: border-box; }
 
+/*
+  НЕПОДВИЖНАЯ СТРАНИЦА.
+  Сама страница (html, body) прибита к экрану и никогда не прокручивается —
+  значит, её нельзя "оттянуть" резинкой на iPhone и нечем потянуть мини-апп
+  вниз. Прокручивается только содержимое внутри #root, и у него тоже
+  выключена "резинка" на краях (overscroll-behavior: none).
+*/
+html, body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
 body {
+  position: fixed;
+  inset: 0;
   margin: 0;
   background: var(--bg);
-  min-height: 100vh;
+  -webkit-text-size-adjust: 100%;  /* iOS не увеличивает шрифт при повороте */
+  touch-action: manipulation;      /* нет зума двойным тапом и задержки нажатия */
+  user-select: none;               /* долгий тап не выделяет текст, как в обычном приложении */
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;     /* и не показывает меню "Скопировать / Поделиться" */
 }
+#root {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+input {
+  user-select: text;               /* в поле поиска выделять текст можно */
+  -webkit-user-select: text;
+}
+svg { -webkit-user-drag: none; }
 
 h1, h2, h3, p { margin: 0; }
 button { font: inherit; color: inherit; cursor: pointer; }
@@ -127,7 +156,7 @@ a { color: var(--green-text); }
 
 /* ---------- Приветствие ---------- */
 
-.welcome { min-height: 100vh; justify-content: center; gap: 16px; padding-bottom: 32px; }
+.welcome { min-height: 100%; justify-content: center; gap: 16px; padding-bottom: 32px; }
 .welcome-mark { color: var(--green-text); }
 .welcome-title { font-size: 34px; line-height: 1.1; font-weight: 800; letter-spacing: -0.02em; }
 .welcome-text { color: var(--muted); font-size: 17px; line-height: 1.45; margin-bottom: 12px; }
@@ -449,3 +478,6 @@ a { color: var(--green-text); }
   background: #FFF4D6;
   color: #6B4E00;
 }
+
+/* Неделя практики: вместо пар одна строка в фирменном цвете */
+.week-note { color: var(--green-text); font-weight: 600; font-size: 15px; }

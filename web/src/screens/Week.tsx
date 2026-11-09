@@ -81,7 +81,8 @@ export function Week({ schedule }: Props) {
               <div className="week-lessons">
                 {!day && <p className="muted small">Нет данных</p>}
                 {day?.off && <p className="muted small">Выходной</p>}
-                {day && !day.off && day.lessons.length === 0 && <p className="muted small">Пар нет</p>}
+                {day?.note && day.lessons.length === 0 && <p className="week-note">{day.note}</p>}
+                {day && !day.off && !day.note && day.lessons.length === 0 && <p className="muted small">Пар нет</p>}
                 {day && !day.off && day.lessons.map((l) => (
                   <LessonCard key={l.raw + l.start} lesson={l} variant="row" />
                 ))}

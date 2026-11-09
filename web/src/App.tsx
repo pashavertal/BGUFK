@@ -28,7 +28,15 @@ export default function App() {
   const [group, setGroup] = useState<string | null>(() => load<string | null>(KEYS.group, null))
   const [theme, setTheme] = useState<ThemePreference>(() => load<ThemePreference>(KEYS.theme, 'system'))
   const [changingGroup, setChangingGroup] = useState(false)
-  const [tab, setTab] = useState<Tab>('today')
+  const [tab, setTabState] = useState<Tab>('today')
+
+  // Прокручивается #root, а не окно: при смене экрана возвращаемся наверх,
+  // иначе новая вкладка откроется прокрученной, как прошлая.
+  // ("Неделя" потом сама докрутит до сегодняшнего дня.)
+  const setTab = (next: Tab) => {
+    document.getElementById('root')?.scrollTo(0, 0)
+    setTabState(next)
+  }
 
   useTheme(theme)
 

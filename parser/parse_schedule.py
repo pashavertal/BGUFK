@@ -434,6 +434,7 @@ def find_header(table: list[list[str | None]]) -> tuple[int, dict[int, str]] | N
 def parse_table(
     table: list[list[str | None]],
     previous_header: dict[int, str] | None,
+    fallback_monday: dt.date | None = None,
 ) -> dict:
     """Разобрать одну таблицу.
 
@@ -453,6 +454,9 @@ def parse_table(
 
     previous_header — колонки групп из прошлой таблицы этого же PDF.
     Нужно, когда таблица продолжается на 2-й странице БЕЗ строки заголовка.
+
+    fallback_monday — понедельник недели, если в самой таблице дат нет
+    (так бывает в неделю практики: в ячейках дней только названия дней).
     """
     header = find_header(table)
     if header:
@@ -501,6 +505,15 @@ def parse_table(
             day_cells.append((pending[0][0], weekday, joined))
             pending = []
     dates = resolve_week_dates(day_cells)
+    if not dates and day_cells and fallback_monday:
+        dates = {
+            row: (fallback_monday + dt.timedelta(days=weekday)).isoformat()
+            for row, weekday, _ in day_cells
+        }
+
+    # Неделя практики: вместо пар одна большая ячейка
+    # "ПРОИЗВОДСТВЕННАЯ ПЕДАГОГИЧЕСКАЯ ПРАКТИКА (6 НЕДЕЛЬ)".
+    practice = practice_note(body)
 
     # --- Проход 2: пройтись по строкам и разложить пары по дням и группам ---
     current_date: str | None = None
@@ -550,7 +563,34 @@ def parse_table(
                     lesson["subgroup"] = idx + 1
                 days[code][current_date]["lessons"].append(lesson)
 
+    # Помечаем практику, только если в таблице вообще нет пар — чтобы не
+    # подписать "практикой" обычный свободный день у учащейся группы.
+    if practice and not any(d["lessons"] for g in days.values() for d in g.values()):
+        for group_days in days.values():
+            for day in group_days.values():
+                if not day["off"]:
+                    day["note"] = practice
+
     return {"groups": groups, "columns": column_group, "days": days}
+
+
+def practice_note(body: list[list[str | None]]) -> str | None:
+    """Найти в таблице упоминание практики и вернуть его в читаемом виде:
+    "ПРОИЗВОДСТВЕННАЯ ПЕДАГОГИЧЕСКАЯ ПРАКТИКА (6 НЕДЕЛЬ)"
+    -> "Производственная педагогическая практика (6 недель)".
+    Текст может быть разбит на соседние ячейки — собираем их по порядку."""
+    parts: list[str] = []
+    for row in body:
+        for cell in row[1:]:
+            text = clean_text(cell or "")
+            if text and not TIME_RE.search(text) and text not in parts:
+                parts.append(text)
+    joined = " ".join(parts)
+    m = re.search(r"[А-ЯЁ ]*ПРАКТИК[А-ЯЁ]*(?:\s*\([^)]*\))?", joined.upper())
+    if not m:
+        return None
+    note = re.sub(r"\s+", " ", m.group(0)).strip().lower()
+    return note[:1].upper() + note[1:]
 
 
 # ==============================================================================
@@ -649,6 +689,42 @@ def guess_unknown_faculties(group_info: dict[str, dict]) -> None:
             info["faculty"] = by_digit[info["code"][0]].most_common(1)[0][0]
 
 
+def monday_from_url(url: str) -> dt.date | None:
+    """В имени файла часто есть дата начала недели: "...-s-09.11-3-kurs.pdf"."""
+    m = re.search(r"(?<!\d)(\d{2})\.(\d{2})(?:\.(\d{4}))?(?!\d)", url.rsplit("/", 1)[-1])
+    if not m:
+        return None
+    today = dt.date.today()
+    day, month = int(m.group(1)), int(m.group(2))
+    years = [int(m.group(3))] if m.group(3) else [today.year - 1, today.year, today.year + 1]
+    candidates = []
+    for year in years:
+        try:
+            candidates.append(dt.date(year, month, day))
+        except ValueError:
+            pass
+    if not candidates:
+        return None
+    date = min(candidates, key=lambda d: abs((d - today).days))
+    return date - dt.timedelta(days=date.weekday())
+
+
+def guess_monday(all_file_days: list[dict[str, dict[str, dict]]]) -> dt.date | None:
+    """Самая частая неделя среди файлов с датами. При равенстве (в воскресенье
+    на сайте висят две недели) — более поздняя: практику публикуют на новую."""
+    weeks: Counter = Counter()
+    for file_days in all_file_days:
+        mondays = set()
+        for days in file_days.values():
+            for iso in days:
+                date = dt.date.fromisoformat(iso)
+                mondays.add(date - dt.timedelta(days=date.weekday()))
+        weeks.update(mondays)
+    if not weeks:
+        return None
+    return max(weeks, key=lambda monday: (weeks[monday], monday))
+
+
 # ==============================================================================
 #  ШАГ 7. ГЛАВНАЯ ФУНКЦИЯ — собирает всё вместе
 # ==============================================================================
@@ -664,44 +740,74 @@ def main() -> int:
     group_days: dict[str, dict[str, dict]] = {}
     failed: list[str] = []
 
+    def parse_file(url: str, fallback_monday: dt.date | None) -> dict[str, dict[str, dict]]:
+        path = download_pdf(url)
+        # file_days — дни только из ЭТОГО файла. Внутри одного файла день
+        # может продолжаться на следующей странице, поэтому пары ДОБАВЛЯЕМ.
+        file_days: dict[str, dict[str, dict]] = {}
+        with pdfplumber.open(path) as pdf:
+            faculty = faculty_from_title(pdf.pages[0].extract_text() or "")
+            previous_header = None
+            for page in pdf.pages:
+                for table in page.extract_tables():
+                    result = parse_table(table, previous_header, fallback_monday)
+                    if result["columns"]:
+                        previous_header = result["columns"]
+                    for code, spec in result["groups"].items():
+                        info = group_info.setdefault(code, {
+                            "code": code,
+                            "faculty": faculty,
+                            "spec": spec,
+                            # Вторая цифра кода = курс: 1101 -> 1 курс, 2406 -> 4 курс.
+                            "course": int(code[1]) if code[1] in "123456" else None,
+                        })
+                        if spec and not info["spec"]:
+                            info["spec"] = spec
+                        for date, day in result["days"][code].items():
+                            target = file_days.setdefault(code, {}).setdefault(
+                                date, {"off": False, "lessons": []}
+                            )
+                            target["off"] = target["off"] or day["off"]
+                            target["lessons"].extend(day["lessons"])
+                            if day.get("note"):
+                                target["note"] = day["note"]
+        print(f"  ok  {len(file_days):3d} групп  {faculty:<12}  {url.rsplit('/', 1)[-1]}")
+        return file_days
+
+    # Файлы, в которых не нашлось ни одной даты (неделя практики), откладываем:
+    # разберём их в конце, когда по остальным PDF станет понятно, какая неделя.
+    undated: list[str] = []
+    dated: list[tuple[str, dict[str, dict[str, dict]]]] = []
     for url in links:
         try:
-            path = download_pdf(url)
-            # file_days — дни только из ЭТОГО файла. Внутри одного файла день
-            # может продолжаться на следующей странице, поэтому пары ДОБАВЛЯЕМ.
-            file_days: dict[str, dict[str, dict]] = {}
-            with pdfplumber.open(path) as pdf:
-                faculty = faculty_from_title(pdf.pages[0].extract_text() or "")
-                previous_header = None
-                for page in pdf.pages:
-                    for table in page.extract_tables():
-                        result = parse_table(table, previous_header)
-                        if result["columns"]:
-                            previous_header = result["columns"]
-                        for code, spec in result["groups"].items():
-                            info = group_info.setdefault(code, {
-                                "code": code,
-                                "faculty": faculty,
-                                "spec": spec,
-                                # Вторая цифра кода = курс: 1101 -> 1 курс, 2406 -> 4 курс.
-                                "course": int(code[1]) if code[1] in "123456" else None,
-                            })
-                            if spec and not info["spec"]:
-                                info["spec"] = spec
-                            for date, day in result["days"][code].items():
-                                target = file_days.setdefault(code, {}).setdefault(
-                                    date, {"off": False, "lessons": []}
-                                )
-                                target["off"] = target["off"] or day["off"]
-                                target["lessons"].extend(day["lessons"])
-            # А между РАЗНЫМИ файлами более поздний перезаписывает день целиком
-            # (на сайте поздняя ссылка = более свежая версия).
-            for code, days in file_days.items():
-                group_days.setdefault(code, {}).update(days)
-            print(f"  ok  {len(file_days):3d} групп  {faculty:<12}  {url.rsplit('/', 1)[-1]}")
+            file_days = parse_file(url, None)
+            if file_days:
+                dated.append((url, file_days))
+            else:
+                undated.append(url)
         except Exception as error:  # один битый PDF не должен ронять всё
             failed.append(url)
             print(f"  ERR {url}: {error}")
+
+    if undated:
+        guessed = guess_monday([days for _, days in dated])
+        print(f"Без дат: {len(undated)} PDF, беру неделю с {guessed}")
+        for url in undated:
+            try:
+                monday = monday_from_url(url) or guessed
+                file_days = parse_file(url, monday)
+                if file_days:
+                    dated.append((url, file_days))
+            except Exception as error:
+                failed.append(url)
+                print(f"  ERR {url}: {error}")
+
+    # Между РАЗНЫМИ файлами более поздний (по порядку ссылок на сайте)
+    # перезаписывает день целиком: поздняя ссылка = более свежая версия.
+    order = {url: i for i, url in enumerate(links)}
+    for _, file_days in sorted(dated, key=lambda item: order[item[0]]):
+        for code, days in file_days.items():
+            group_days.setdefault(code, {}).update(days)
 
     if not group_days:
         # Если ничего не получилось — НЕ перезаписываем старые данные пустотой.

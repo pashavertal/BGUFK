@@ -117,7 +117,12 @@ export function Today({ schedule }: Props) {
 
       {highlight.kind === 'none' && (
         <div className="empty-card">
-          {covered || day ? (
+          {day?.note ? (
+            <>
+              <p className="empty-title">{day.note}</p>
+              <p className="muted">Пар по расписанию нет.</p>
+            </>
+          ) : covered || day ? (
             <>
               <p className="empty-title">Сегодня пар нет</p>
               <p className="muted">{day?.off ? 'Выходной по расписанию.' : 'Можно выдохнуть.'}</p>

@@ -11,6 +11,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import { initTelegram } from './lib/telegram'
 import './index.css'
 
@@ -20,6 +21,8 @@ initTelegram()
 // Мы уверены, потому что сами написали его в index.html.
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </StrictMode>,
 )

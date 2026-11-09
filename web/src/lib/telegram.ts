@@ -22,11 +22,23 @@ function supports(version: string): boolean {
   return Boolean(tg && isInsideTelegram && tg.isVersionAtLeast(version))
 }
 
-/** Вызвать один раз при старте: "готов" + развернуть на весь экран */
+/**
+  Вызвать один раз при старте: "готов", развернуть на весь экран и сделать
+  приложение "неподвижным": свайп вниз не сворачивает его, экран не
+  поворачивается, щипок не увеличивает страницу.
+*/
 export function initTelegram(): void {
+  // iOS игнорирует user-scalable=no из <meta viewport>, поэтому щипок
+  // для зума гасим вручную. Работает и вне Telegram.
+  document.addEventListener('gesturestart', (event) => event.preventDefault())
+
   if (!tg) return
   tg.ready()
   tg.expand()
+  if (supports('7.7')) tg.disableVerticalSwipes()
+  // Фиксирует ту ориентацию, в которой открыли. Телефон почти всегда держат
+  // вертикально, так что на практике это "только портрет".
+  if (supports('8.0')) tg.lockOrientation()
 }
 
 /** Тема, которая сейчас стоит в Telegram (или в системе, если открыто в браузере) */
@@ -41,6 +53,7 @@ export function paintTelegramChrome(background: string): void {
   if (!tg || !supports('6.1')) return
   tg.setHeaderColor(background)
   tg.setBackgroundColor(background)
+  if (supports('7.10')) tg.setBottomBarColor(background)
 }
 
 /** Лёгкая вибрация при выборе (Telegram 6.1+). На ПК просто ничего не будет. */

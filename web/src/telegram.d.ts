@@ -40,6 +40,12 @@ interface TelegramWebApp {
   isVersionAtLeast(version: string): boolean
   setHeaderColor(color: string): void
   setBackgroundColor(color: string): void
+  /** Цвет полосы под приложением (Telegram 7.10+) */
+  setBottomBarColor(color: string): void
+  /** Запретить закрытие/сворачивание свайпом вниз (Telegram 7.7+) */
+  disableVerticalSwipes(): void
+  /** Зафиксировать текущую ориентацию экрана (Telegram 8.0+) */
+  lockOrientation(): void
   openLink(url: string): void
   onEvent(event: 'themeChanged', callback: () => void): void
   offEvent(event: 'themeChanged', callback: () => void): void
