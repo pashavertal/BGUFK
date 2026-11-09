@@ -3,17 +3,20 @@
 
   Плюс блок "О приложении" с пометкой о неофициальности и источником данных.
 */
+import { useState } from 'react'
 import { Disclaimer } from '../components/Disclaimer'
+import { IconChevron } from '../components/Icons'
 import { hapticSelect, openTelegramLink } from '../lib/telegram'
+import type { GroupSchedule, ThemePreference } from '../types'
 
 /** Куда пишут об ошибках в расписании и предложения */
 const FEEDBACK_URL = 'https://t.me/Runnwayy'
-import type { GroupSchedule, ThemePreference } from '../types'
 
+// "Авто" = как тема в Telegram
 const THEMES: { id: ThemePreference; label: string }[] = [
-  { id: 'system', label: 'Авто' },   // "Авто" = как в Telegram; коротко, чтобы влезло в одну строку
-  { id: 'light', label: 'Светлая' },
   { id: 'dark', label: 'Тёмная' },
+  { id: 'light', label: 'Светлая' },
+  { id: 'system', label: 'Авто' },
 ]
 
 interface Props {
@@ -25,6 +28,7 @@ interface Props {
 }
 
 export function Settings({ groupCode, schedule, theme, onThemeChange, onChangeGroup }: Props) {
+  const [aboutOpen, setAboutOpen] = useState(false)
   // Дата обновления данных парсером — понятным языком ("8 ноября, 22:44").
   const updated = schedule
     ? new Date(schedule.generatedAt).toLocaleString('ru-RU', {
@@ -60,7 +64,6 @@ export function Settings({ groupCode, schedule, theme, onThemeChange, onChangeGr
           </button>
         ))}
       </div>
-      <p className="muted small">«Авто» — тема меняется вместе с темой Telegram.</p>
 
       <h2 className="section-title">Обратная связь</h2>
       <div className="card settings-group">
@@ -73,13 +76,27 @@ export function Settings({ groupCode, schedule, theme, onThemeChange, onChangeGr
         </button>
       </div>
 
-      <h2 className="section-title">О приложении</h2>
-      <div className="card">
-        <Disclaimer />
-        <p className="muted small">
-          Выбранная группа и тема хранятся только на этом телефоне. Мы считаем только анонимное число открытий по группам — без имён и Telegram-аккаунтов.
-        </p>
-        {updated && <p className="muted small">Данные обновлены: {updated}</p>}
+      {/* "О приложении" — свёрнуто по умолчанию, раскрывается на месте */}
+      <div className={aboutOpen ? 'card about open' : 'card about'}>
+        <button
+          type="button"
+          className="about-toggle"
+          aria-expanded={aboutOpen}
+          aria-controls="about-text"
+          onClick={() => { hapticSelect(); setAboutOpen(!aboutOpen) }}
+        >
+          <span>О приложении</span>
+          <IconChevron />
+        </button>
+        {aboutOpen && (
+          <div id="about-text" className="about-text">
+            <Disclaimer />
+            <p className="muted small">
+              Выбранная группа и тема хранятся только на этом телефоне. Мы считаем только анонимное число открытий по группам — без имён и Telegram-аккаунтов.
+            </p>
+            {updated && <p className="muted small">Данные обновлены: {updated}</p>}
+          </div>
+        )}
       </div>
     </main>
   )
