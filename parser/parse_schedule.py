@@ -479,12 +479,27 @@ def parse_table(
     body = table[body_start:]
 
     # --- Проход 1: найти строки, где начинается новый день, и понять даты ---
+    # Иногда pdfplumber режет ячейку дня на куски в разных строках:
+    # "11.41\nА" в одной строке и "ТОББУС" через строку (это "СУББОТА 14.11").
+    # По отдельности ни один кусок не похож на день, поэтому нераспознанные
+    # куски копим и пробуем распознать их вместе. День начинается со строки
+    # ПЕРВОГО куска — иначе первые пары субботы ушли бы в пятницу.
     day_cells: list[tuple[int, int, str]] = []
+    pending: list[tuple[int, str]] = []          # (строка, текст) нераспознанных кусков
     for i, row in enumerate(body):
-        if row and row[0]:
-            weekday = detect_weekday(row[0])
-            if weekday is not None:
-                day_cells.append((i, weekday, row[0]))
+        if not row or not row[0]:
+            continue
+        weekday = detect_weekday(row[0])
+        if weekday is not None:
+            day_cells.append((i, weekday, row[0]))
+            pending = []
+            continue
+        pending.append((i, row[0]))
+        joined = "\n".join(text for _, text in pending)
+        weekday = detect_weekday(joined)
+        if weekday is not None:
+            day_cells.append((pending[0][0], weekday, joined))
+            pending = []
     dates = resolve_week_dates(day_cells)
 
     # --- Проход 2: пройтись по строкам и разложить пары по дням и группам ---

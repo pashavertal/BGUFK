@@ -180,23 +180,100 @@ a { color: var(--green-text); }
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 8px;
 }
-.group-chip {
-  width: 100%;
-  min-height: 64px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 2px;
-  padding: 10px 14px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  text-align: left;
+/*
+  КАРТОЧКА ГРУППЫ — все одной формы.
+  Раньше высота зависела от длины текста: у "Гребля академическая, гребля
+  на байд. и каноэ, парусный спорт…" карточка была огромной, а у короткой —
+  маленькой. Теперь под текст ВСЕГДА отведено ровно 2 строки, лишнее
+  обрезается многоточием и открывается кнопкой ⌄.
+*/
+
+/* Обёртка: держит две кнопки (выбрать и раскрыть) */
+.group-card {
+  position: relative;       /* relative — "точка отсчёта": кнопку ⌄ внутри
+                               ставим в угол относительно ЭТОЙ карточки,
+                               а не всего экрана */
+  height: 100%;             /* растянуться на всю высоту ячейки сетки: если
+                               соседка в ряду раскрылась, эта станет такой же
+                               высоты, и ряд останется ровным */
 }
-.group-chip:active { border-color: var(--green-text); }
-.group-code { font-size: 20px; font-weight: 800; }
-.group-spec { font-size: 13px; color: var(--muted); }
+.group-chip {
+  width: 100%;              /* на всю ширину ячейки сетки */
+  height: 100%;             /* и на всю высоту */
+  display: flex;            /* flex — раскладка "в линию" */
+  flex-direction: column;   /* column — линия сверху вниз: номер, под ним текст */
+  align-items: flex-start;  /* прижать содержимое к левому краю */
+  justify-content: flex-start; /* и к верху: у всех карточек номер на одной
+                                  высоте, даже когда ряд вытянулся */
+  gap: 4px;                 /* расстояние между номером и текстом */
+  padding: 12px 14px;       /* внутренние поля: 12 сверху/снизу, 14 по бокам */
+  background: var(--surface);         /* цвет карточки из палитры (светлая/тёмная тема) */
+  border: 1px solid var(--border);    /* тонкая рамка: толщина, сплошная, цвет */
+  border-radius: 14px;      /* скругление углов */
+  text-align: left;         /* у кнопок текст по умолчанию по центру, нам нужно слева */
+}
+.group-chip:active { border-color: var(--green-text); } /* :active — "пока палец нажимает" */
+
+.group-code {
+  font-size: 20px;
+  font-weight: 800;         /* 800 — очень жирный (400 — обычный, 700 — жирный) */
+  line-height: 24px;        /* высота строки фиксирована → номер везде одинаковый */
+  padding-right: 36px;      /* место справа под кнопку ⌄, чтобы не налезала */
+}
+
+.group-spec {
+  font-size: 13px;
+  line-height: 18px;        /* одна строка = 18px, значит 2 строки = 36px */
+  color: var(--muted);      /* второстепенный серый цвет */
+  height: 36px;             /* РОВНО 2 строки — всегда, даже если текста нет.
+                               Это и делает все карточки одинаковыми */
+
+  /* "Обрезать на 2-й строке и поставить …" — три свойства работают вместе:
+     display: -webkit-box + -webkit-box-orient — особый старый режим
+     раскладки, без него line-clamp не работает (так исторически сложилось,
+     поддерживается всеми браузерами, включая Telegram);
+     -webkit-line-clamp: 2 — "оставь 2 строки, в конце многоточие". */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;            /* то же самое, новое стандартное имя — на будущее */
+  overflow: hidden;         /* всё, что не влезло, спрятать */
+  word-break: break-word;   /* "конькобеж.спорт" без пробелов тоже переносится */
+}
+
+/* Раскрытая карточка: снимаем ограничение в 2 строки */
+.group-card.expanded .group-spec {
+  /* .group-card.expanded (без пробела) — элемент, у которого ОБА класса;
+     пробел и .group-spec — "текст ВНУТРИ такой карточки" */
+  height: auto;             /* auto — высота по содержимому */
+  -webkit-line-clamp: unset;/* unset — "отменить", показать все строки */
+  line-clamp: unset;
+}
+.group-card.expanded .group-chip { border-color: var(--green-text); } /* выделяем открытую */
+
+/* Кнопка ⌄ в правом верхнем углу карточки */
+.group-more {
+  position: absolute;       /* absolute — "вынуть из потока и поставить по
+                               координатам" относительно .group-card */
+  top: 6px;                 /* 6px от верха карточки */
+  right: 6px;               /* 6px от правого края */
+  width: 36px;              /* 36×36 — удобно попасть пальцем, при этом */
+  height: 36px;             /*   иконка внутри маленькая и не мешает */
+  display: grid;
+  place-items: center;      /* place-items: center — иконку ровно по центру кнопки */
+  border: 0;                /* без рамки */
+  border-radius: 10px;
+  background: transparent;  /* прозрачный фон, видна только стрелка */
+  color: var(--muted);
+}
+.group-more:active { background: var(--green-soft); } /* бледно-зелёная вспышка при нажатии */
+.group-more svg {
+  width: 20px;
+  height: 20px;
+  transform: rotate(90deg); /* наша иконка смотрит вправо (›), поворачиваем вниз (⌄) */
+  transition: transform .2s;/* поворот плавный, за 0.2 секунды, а не скачком */
+}
+.group-card.expanded .group-more svg { transform: rotate(-90deg); } /* раскрыто → стрелка вверх */
 
 /* ---------- Экран "Сегодня" ---------- */
 
