@@ -14,7 +14,7 @@ from __future__ import annotations
 import asyncio
 import sys
 
-from app import make_bot, read_token, setup_bot_profile, webhook_secret
+from botcore import make_bot, read_token, setup_bot_profile, webhook_secret
 
 
 async def main(base_url: str) -> None:

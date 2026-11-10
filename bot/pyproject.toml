@@ -1,0 +1,10 @@
+# Настройки для Vercel: какие библиотеки поставить и где вход в бота.
+# (requirements.txt рядом — для запуска у себя на компьютере.)
+[project]
+name = "bgufk-bot"
+version = "1.0.0"
+requires-python = ">=3.9"
+dependencies = ["aiogram==3.22.0"]
+
+[tool.vercel]
+entrypoint = "api.webhook:handler"

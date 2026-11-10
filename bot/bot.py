@@ -15,7 +15,7 @@ import asyncio
 import logging
 import sys
 
-from app import dp, make_bot, read_token, setup_bot_profile
+from botcore import dp, make_bot, read_token, setup_bot_profile
 
 
 async def main() -> None:

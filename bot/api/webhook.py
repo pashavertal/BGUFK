@@ -19,12 +19,12 @@ import sys
 from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 
-# app.py лежит на папку выше
+# botcore.py лежит на папку выше
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from aiogram.types import Update  # noqa: E402
 
-from app import dp, make_bot, read_token, webhook_secret  # noqa: E402
+from botcore import dp, make_bot, read_token, webhook_secret  # noqa: E402
 
 
 async def process(token: str, data: dict) -> None:
