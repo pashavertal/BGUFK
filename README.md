@@ -46,17 +46,26 @@ npm run dev        # откроется на http://localhost:5173
 ## Бот (`bot/`, aiogram 3)
 
 Отвечает на `/start` приветствием, пометкой о неофициальности и кнопкой «Открыть расписание».
-При запуске сам настраивает кнопку меню, описание и команды бота — в @BotFather это делать не нужно.
 
-```bash
-.venv/bin/pip install -r bot/requirements.txt
-cp bot/.env.example bot/.env      # и вписать BOT_TOKEN от @BotFather
-.venv/bin/python bot/bot.py
-```
+| Файл | Что это |
+|---|---|
+| `bot/app.py` | Тексты, ответы, настройка профиля бота (кнопка меню, описание, команды) |
+| `bot/api/webhook.py` | Основной режим: вебхук на Vercel, работает круглосуточно и бесплатно |
+| `bot/set_webhook.py` | Один раз подключает бота к Vercel |
+| `bot/bot.py` | Запуск у себя на компьютере для проверки (polling) |
 
-Бот отвечает, только пока этот процесс запущен. Мини-апп через кнопку меню работает и без него:
-кнопку Telegram хранит у себя после первого запуска. Для круглосуточной работы бота нужен
-сервер или хостинг.
+### Хостинг на Vercel (бесплатно)
+
+1. [vercel.com](https://vercel.com) → войти через GitHub → **Add New → Project** → выбрать этот репозиторий.
+2. **Root Directory:** `bot`. **Environment Variables:** `BOT_TOKEN` = токен от @BotFather. **Deploy**.
+3. Подключить вебхук (токен берётся из `bot/.env`):
+   ```bash
+   .venv/bin/pip install -r bot/requirements.txt
+   cp bot/.env.example bot/.env      # и вписать BOT_TOKEN
+   .venv/bin/python bot/set_webhook.py https://<проект>.vercel.app
+   ```
+
+После каждого push в `main` Vercel обновляет бота сам.
 
 ## Известные ограничения
 
