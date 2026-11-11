@@ -37,6 +37,7 @@ from aiogram.types import (
 
 WEBAPP_URL = "https://pashavertal.github.io/BGUFK/"
 FEEDBACK_USERNAME = "Runnwayy"
+CHANNEL_USERNAME = "studentsbgufk"
 
 WELCOME_TEXT = (
     "👋 <b>Привет! Это расписание пар БГУФК.</b>\n"
@@ -54,6 +55,7 @@ WELCOME_TEXT = (
     "Расписание берётся из открытых PDF на sportedu.by — при сомнениях "
     "сверяйся с официальным расписанием.</i>\n"
     "\n"
+    f"📣 Новости и обновления — в канале @{CHANNEL_USERNAME}\n"
     f"Нашёл ошибку или есть идея — пиши @{FEEDBACK_USERNAME}"
 )
 
