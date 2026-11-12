@@ -14,13 +14,14 @@
 */
 
 /** Код сайта из goatcounter.com, например 'bsufk' для bsufk.goatcounter.com */
-const GOATCOUNTER_CODE = ''
+const GOATCOUNTER_CODE = 'pavelvert'
 
 /** Записать одно открытие приложения для группы. */
 export function trackOpen(code: string, faculty: string, course: number | null): void {
   if (!GOATCOUNTER_CODE) return
   // При разработке на своём компьютере статистику не портим.
-  if (['localhost', '127.0.0.1'].includes(location.hostname)) return
+  // (и с телефона по адресу 192.168.… тоже — это тот же сервер разработки)
+  if (import.meta.env.DEV) return
 
   const params = new URLSearchParams({
     p: `/group/${code}`,
