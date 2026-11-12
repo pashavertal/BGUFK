@@ -116,3 +116,21 @@ export function formatDuration(totalMinutes: number): string {
   if (h === 0) return `${m} ${plural(m, ['минуту', 'минуты', 'минут'])}`
   return m === 0 ? `${h} ч` : `${h} ч ${m} мин`
 }
+
+/** "08:30" -> "8:30" */
+export function shortTime(hhmm: string): string {
+  return hhmm.replace(/^0/, '')
+}
+
+/** Длина перемены: 15 -> "15 мин", 95 -> "1 ч 35 мин" */
+export function formatGap(totalMinutes: number): string {
+  const h = Math.floor(totalMinutes / 60)
+  const m = totalMinutes % 60
+  if (h === 0) return `${m} мин`
+  return m === 0 ? `${h} ч` : `${h} ч ${m} мин`
+}
+
+/** "2026-11-12" -> "четверг" */
+export function weekdayLower(iso: string): string {
+  return WEEKDAY_LONG[weekdayIndex(iso)].toLowerCase()
+}

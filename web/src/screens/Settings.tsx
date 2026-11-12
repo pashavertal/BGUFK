@@ -1,18 +1,20 @@
 /*
-  ЭКРАН 3: НАСТРОЙКИ (для MVP — группа и тема)
+  ЭКРАН 3: НАСТРОЙКИ — группа, тема, ссылки
 
   Плюс блок "О приложении" с пометкой о неофициальности и источником данных.
 */
 import { useState } from 'react'
 import { Disclaimer } from '../components/Disclaimer'
-import { IconChevron } from '../components/Icons'
-import { hapticSelect, openTelegramLink } from '../lib/telegram'
+import { IconChevron, IconGroup, IconMessage, IconStudy, IconTelegram } from '../components/Icons'
+import { hapticSelect, openLink, openTelegramLink } from '../lib/telegram'
 import type { GroupSchedule, ThemePreference } from '../types'
 
 /** Куда пишут об ошибках в расписании и предложения */
 const FEEDBACK_URL = 'https://t.me/Runnwayy'
 /** Канал проекта: новости и обновления */
 const CHANNEL_URL = 'https://t.me/studentsbgufk'
+/** Дистанционное обучение БГУФК */
+const DISTANCE_URL = 'https://touredu.by/login/index.php'
 
 // "Авто" = как тема в Telegram
 const THEMES: { id: ThemePreference; label: string }[] = [
@@ -42,21 +44,19 @@ export function Settings({ groupCode, schedule, theme, onThemeChange, onChangeGr
     <main className="screen">
       <h1 className="screen-title">Настройки</h1>
 
-      <h2 className="section-title">Группа</h2>
-      <div className="card settings-group">
-        <div>
-          <p className="settings-group-code">{groupCode}</p>
-          {schedule && (
-            <p className="muted small">
-              {[schedule.faculty, schedule.spec, schedule.course && `${schedule.course} курс`]
-                .filter(Boolean).join(' · ')}
-            </p>
-          )}
-        </div>
-        <button type="button" className="button-secondary" onClick={onChangeGroup}>Сменить</button>
+      <div className="card widget">
+        <p className="widget-title">Группа {groupCode}</p>
+        {schedule && (
+          <p className="muted small">
+            {[schedule.faculty, schedule.spec, schedule.course && `${schedule.course} курс`]
+              .filter(Boolean).join(' · ')}
+          </p>
+        )}
+        <button type="button" className="widget-button" onClick={onChangeGroup}>
+          <span className="widget-icon"><IconGroup /></span>Сменить группу
+        </button>
       </div>
 
-      <h2 className="section-title">Тема</h2>
       <div className="segmented" role="radiogroup" aria-label="Тема оформления">
         {THEMES.map(({ id, label }) => (
           <button key={id} type="button" role="radio" aria-checked={theme === id}
@@ -67,25 +67,29 @@ export function Settings({ groupCode, schedule, theme, onThemeChange, onChangeGr
         ))}
       </div>
 
-      <h2 className="section-title">Новости</h2>
-      <div className="card settings-group">
-        <div>
-          <p className="settings-feedback-title">Канал проекта</p>
-          <p className="muted small">Обновления, инструкции и опросы о новых функциях.</p>
-        </div>
-        <button type="button" className="button-secondary" onClick={() => openTelegramLink(CHANNEL_URL)}>
-          Открыть
+      <div className="card widget">
+        <p className="widget-title">Дистанционное обучение БГУФК</p>
+        <p className="muted small">Курсы и задания на сайте touredu.by.</p>
+        <button type="button" className="widget-button" onClick={() => openLink(DISTANCE_URL)}>
+          <span className="widget-icon"><IconStudy /></span>Открыть
         </button>
       </div>
 
-      <h2 className="section-title">Обратная связь</h2>
-      <div className="card settings-group">
-        <div>
-          <p className="settings-feedback-title">Нашёл ошибку?</p>
-          <p className="muted small">Неверная пара, нет группы или есть идея — напиши, исправим.</p>
-        </div>
-        <button type="button" className="button-secondary" onClick={() => openTelegramLink(FEEDBACK_URL)}>
-          Написать
+      <h2 className="section-title settings-section">Новости</h2>
+      <div className="card widget quiet">
+        <p className="widget-title">Канал проекта</p>
+        <p className="muted small">Обновления, инструкции и опросы о новых функциях.</p>
+        <button type="button" className="widget-button" onClick={() => openTelegramLink(CHANNEL_URL)}>
+          <span className="widget-icon telegram"><IconTelegram /></span>Наш Telegram-канал
+        </button>
+      </div>
+
+      <h2 className="section-title settings-section">Обратная связь</h2>
+      <div className="card widget quiet">
+        <p className="widget-title">Нашёл ошибку?</p>
+        <p className="muted small">Неверная пара, нет группы или есть идея — напиши, исправим.</p>
+        <button type="button" className="widget-button" onClick={() => openTelegramLink(FEEDBACK_URL)}>
+          <span className="widget-icon"><IconMessage /></span>Напиши нам
         </button>
       </div>
 
@@ -105,7 +109,7 @@ export function Settings({ groupCode, schedule, theme, onThemeChange, onChangeGr
           <div id="about-text" className="about-text">
             <Disclaimer />
             <p className="muted small">
-              Выбранная группа и тема хранятся только на этом телефоне. Мы считаем только анонимное число открытий по группам — без имён и Telegram-аккаунтов.
+              Выбранная группа, тема и заметки хранятся только на этом телефоне. Мы считаем только анонимное число открытий по группам — без имён и Telegram-аккаунтов.
             </p>
             {updated && <p className="muted small">Данные обновлены: {updated}</p>}
           </div>

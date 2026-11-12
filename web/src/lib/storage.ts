@@ -27,6 +27,7 @@ export const KEYS = {
   group: 'group',            // выбранная группа, например "1101"
   theme: 'theme',            // 'system' | 'light' | 'dark'
   schedule: (code: string) => `schedule.${code}`,  // копия расписания группы
+  notes: (code: string) => `notes.${code}`,        // заметки к парам этой группы
 } as const
 // as const — "заморозить": TypeScript запомнит точные значения, а не просто "строка".
 

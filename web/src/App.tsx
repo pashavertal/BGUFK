@@ -13,11 +13,15 @@
   Почему не Redux/Zustand и т.п.: состояния у нас всего два поля,
   обычного useState хватает с запасом. Лишние библиотеки — лишняя сложность.
 */
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { BottomNav, type Tab } from './components/BottomNav'
+import { NoteSheet } from './components/NoteSheet'
+import { useNotes } from './hooks/useNotes'
 import { useSchedule } from './hooks/useSchedule'
 import { useTheme } from './hooks/useTheme'
+import type { NoteTarget } from './lib/notes'
 import { trackOpen } from './lib/stats'
+import { hapticSelect } from './lib/telegram'
 import { KEYS, load, remove, save } from './lib/storage'
 import { Onboarding } from './screens/Onboarding'
 import { Settings } from './screens/Settings'
@@ -93,6 +97,12 @@ function MainScreens({ group, tab, onTab, theme, onThemeChange, onChangeGroup }:
     trackOpen(schedule.code, schedule.faculty, schedule.course)
   }, [schedule])
 
+  // Заметки: одна копия на все экраны, окно заметки открывается поверх любого из них
+  const { notes, updateNotes } = useNotes(group)
+  const [noteTarget, setNoteTarget] = useState<NoteTarget | null>(null)
+  const openNote = useCallback((target: NoteTarget) => { hapticSelect(); setNoteTarget(target) }, [])
+  const closeNote = useCallback(() => setNoteTarget(null), [])
+
   let content
   if (tab === 'settings') {
     content = <Settings groupCode={group} schedule={schedule} theme={theme}
@@ -106,7 +116,9 @@ function MainScreens({ group, tab, onTab, theme, onThemeChange, onChangeGroup }:
       </main>
     )
   } else {
-    content = tab === 'today' ? <Today schedule={schedule} /> : <Week schedule={schedule} />
+    content = tab === 'today'
+      ? <Today schedule={schedule} notes={notes} onNote={openNote} />
+      : <Week schedule={schedule} notes={notes} onNote={openNote} />
   }
 
   return (
@@ -116,6 +128,10 @@ function MainScreens({ group, tab, onTab, theme, onThemeChange, onChangeGroup }:
       )}
       {content}
       <BottomNav active={tab} onChange={onTab} />
+      {noteTarget && schedule && (
+        <NoteSheet schedule={schedule} target={noteTarget} notes={notes}
+                   onSave={updateNotes} onClose={closeNote} />
+      )}
     </div>
   )
 }

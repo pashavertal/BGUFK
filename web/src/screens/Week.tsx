@@ -6,19 +6,23 @@
 
   Бонус к ТЗ: на сайте обычно выложены 2 недели (текущая и следующая),
   поэтому есть переключатель "Эта неделя / Следующая".
+  Нажатие на пару открывает заметку к ней; оранжевый значок — заметка уже есть.
 */
 import { useEffect, useRef, useState } from 'react'
 import { LessonCard } from '../components/LessonCard'
 import { useNow } from '../hooks/useNow'
+import { noteKey, type NoteTarget, type Notes } from '../lib/notes'
 import { addDays, dayOfMonth, formatShortDate, mondayOf, WEEKDAY_SHORT, weekdayIndex } from '../lib/time'
 import { hapticSelect } from '../lib/telegram'
 import type { GroupSchedule } from '../types'
 
 interface Props {
   schedule: GroupSchedule
+  notes: Notes
+  onNote: (target: NoteTarget) => void
 }
 
-export function Week({ schedule }: Props) {
+export function Week({ schedule, notes, onNote }: Props) {
   const now = useNow()
   const thisMonday = mondayOf(now.date)
   const nextMonday = addDays(thisMonday, 7)
@@ -84,7 +88,9 @@ export function Week({ schedule }: Props) {
                 {day?.note && day.lessons.length === 0 && <p className="week-note">{day.note}</p>}
                 {day && !day.off && !day.note && day.lessons.length === 0 && <p className="muted small">Пар нет</p>}
                 {day && !day.off && day.lessons.map((l) => (
-                  <LessonCard key={l.raw + l.start} lesson={l} variant="row" />
+                  <LessonCard key={l.raw + l.start} lesson={l} variant="row"
+                              hasNote={Boolean(notes[noteKey({ date, lesson: l })])}
+                              onNote={() => onNote({ date, lesson: l })} />
                 ))}
               </div>
             </section>

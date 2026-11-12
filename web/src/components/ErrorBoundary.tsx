@@ -29,7 +29,8 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, State> {
     try {
       // Стираем только свои ключи (bsufk.*), чужое не трогаем.
       Object.keys(localStorage)
-        .filter((key) => key.startsWith('bsufk.'))
+        // заметки не трогаем — их больше нигде нет
+        .filter((key) => key.startsWith('bsufk.') && !key.startsWith('bsufk.notes.'))
         .forEach((key) => localStorage.removeItem(key))
     } catch {
       // localStorage может быть недоступен — тогда просто перезагружаем

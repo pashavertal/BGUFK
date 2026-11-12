@@ -26,6 +26,15 @@
   --text: #13201A;             /* основной текст */
   --muted: #5F6F66;            /* второстепенный текст */
   --border: #DCE5DF;           /* тонкие линии */
+  --surface-2: #F3F6F4;        /* окошко пары внутри карточки */
+
+  --hero: #2BBF76;             /* яркий зелёный виджет «Сегодня» и выбранная вкладка */
+  --on-hero: #05210F;          /* текст на нём */
+  --note: #FF9F0A;             /* оранжевый значок «есть заметка» */
+
+  --glass: rgba(243, 246, 244, 0.72);       /* стеклянное меню: цвет фона, полупрозрачный */
+  --glass-border: rgba(0, 0, 0, 0.06);
+  --glass-active: rgba(43, 191, 118, 0.9);  /* выбранная вкладка: стекло цвета виджета */
 
   --radius: 16px;              /* скругление карточек */
   --nav-height: 80px;          /* высота нижнего меню вместе с отступом от края экрана */
@@ -50,6 +59,14 @@
   --text: #E8EFEB;
   --muted: #93A39A;
   --border: #26322C;
+  --surface-2: #1F2924;
+
+  --hero: #2BBF76;
+  --on-hero: #05210F;
+
+  --glass: rgba(14, 20, 17, 0.66);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-active: rgba(43, 191, 118, 0.9);
   color-scheme: dark;          /* чтобы поля ввода и скроллбары тоже стали тёмными */
 }
 
@@ -86,7 +103,7 @@ body {
   overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
 }
-input {
+input, textarea {
   user-select: text;               /* в поле поиска выделять текст можно */
   -webkit-user-select: text;
 }
@@ -109,6 +126,7 @@ a { color: var(--green-text); }
   gap: 12px;
 }
 .screen.center { min-height: 70vh; justify-content: center; text-align: center; }
+.empty-title { font-size: 20px; font-weight: 800; }
 
 .screen-title { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
 .screen-subtitle { color: var(--muted); margin-top: -6px; }
@@ -306,58 +324,71 @@ a { color: var(--green-text); }
 
 /* ---------- Экран "Сегодня" ---------- */
 
-.today-date { color: var(--green-text); font-weight: 600; }
-.hero-caption {
-  display: flex; align-items: center; gap: 8px;
-  font-weight: 600; color: var(--muted); margin: 4px 0 8px;
+.today-header { display: flex; flex-direction: column; gap: 2px; margin-bottom: 4px; }
+.today-group { color: var(--muted); font-weight: 600; }
+
+/* Яркий виджет */
+.hero {
+  position: relative;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+  padding: 18px 20px 22px;
+  border-radius: 26px;
+  background: var(--hero);
+  color: var(--on-hero);
+  box-shadow: 0 12px 40px rgba(43, 191, 118, 0.28);
+  overflow: hidden;
 }
+.hero-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 12px; border-radius: 999px;
+  background: rgba(0, 0, 0, 0.1);
+  color: #000;
+  font-size: 14px; font-weight: 700;
+}
+.hero-title { font-size: 28px; line-height: 1.12; font-weight: 800; letter-spacing: -0.02em; overflow-wrap: break-word; hyphens: auto; -webkit-hyphens: auto; }
+.hero-line { font-size: 16px; line-height: 1.4; font-weight: 600; color: rgba(5, 33, 15, 0.78); overflow-wrap: anywhere; }
+.hero-line b { color: #000; font-weight: 800; }
+.hero-progress {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: rgba(0, 0, 0, 0.1);
+}
+.hero-progress > div { height: 100%; background: var(--on-hero); }
 .live-dot {
   width: 8px; height: 8px; border-radius: 50%;
   background: #E5484D;
-  animation: pulse 1.6s ease-in-out infinite;   /* мигающая "запись" — пара идёт */
+  animation: pulse 1.6s ease-in-out infinite;
 }
 @keyframes pulse { 50% { opacity: 0.3; } }
 
-/* Большой виджет пары */
-.hero-card {
-  position: relative;
-  display: flex;
-  gap: 16px;
-  padding: 20px 18px 24px;
-  border-radius: 20px;
-  background: var(--green);
-  color: var(--on-green);
-  overflow: hidden;
-  margin-bottom: 8px;
-}
-.hero-time {
-  display: flex; flex-direction: column;
-  font-size: 22px; font-weight: 800;
-  font-variant-numeric: tabular-nums;  /* цифры одинаковой ширины — время не "прыгает" */
-  min-width: 64px;
-}
-.hero-time-end { font-size: 16px; font-weight: 600; opacity: 0.75; }
-.hero-body { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-.hero-subject { font-size: 22px; line-height: 1.2; font-weight: 800; overflow-wrap: anywhere; }
-.hero-line { font-size: 15px; line-height: 1.35; overflow-wrap: anywhere; }
-.hero-label {
-  display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.7;
-}
-.hero-progress {
-  position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: rgb(255 255 255 / 0.2);
-}
-.hero-progress > div { height: 100%; background: var(--on-green); }
-
-.empty-card {
-  padding: 24px 18px;
-  border-radius: 20px;
+/* Большой виджет дня */
+.day-card {
+  padding: 18px 12px 12px;
+  border-radius: 26px;
   background: var(--surface);
   border: 1px solid var(--border);
-  display: flex; flex-direction: column; gap: 6px;
+  display: flex; flex-direction: column; gap: 14px;
 }
-.empty-title { font-size: 20px; font-weight: 800; }
+.day-card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 0 6px; }
+.day-card-head h2 { font-size: 20px; font-weight: 800; }
+.day-card-head span { color: var(--muted); font-weight: 700; white-space: nowrap; }
+.day-card-list { display: flex; flex-direction: column; gap: 6px; }
 
-.rest { display: flex; flex-direction: column; gap: 8px; }
+/* «Прошедшие пары · N» — сворачивается, как «О приложении» */
+.past-toggle {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; min-height: 44px; padding: 0 8px;
+  border: 0; background: transparent; text-align: left;
+  font-size: 15px; font-weight: 700; color: var(--muted);
+}
+.past-toggle svg { transform: rotate(90deg); transition: transform .2s; }
+.past-toggle.open svg { transform: rotate(-90deg); }
+.past-card { padding: 6px 14px; gap: 6px; }
+.past-card .day-card-list { padding-bottom: 8px; }
+
+/* Перемена между окошками: линия — текст — линия */
+.break { display: flex; align-items: center; gap: 10px; padding: 2px 8px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.break::before, .break::after { content: ''; flex: 1; border-top: 1px solid var(--border); }
+.break.active { color: var(--green-text); font-weight: 700; }
+.break.active::before, .break.active::after { border-color: var(--hero); }
 
 /* ---------- Строка пары (компактная) ---------- */
 
@@ -369,7 +400,25 @@ a { color: var(--green-text); }
   border: 1px solid var(--border);
   border-radius: 14px;
 }
-.lesson-past { opacity: 0.5; }          /* прошедшие пары — бледные */
+.lesson-past { opacity: 0.5; }
+.lesson-box { background: var(--surface-2); border-color: transparent; border-radius: 18px; padding: 14px 12px; gap: 12px; }
+.lesson-box.lesson-current { box-shadow: inset 0 0 0 2px var(--hero); }
+.lesson-row.tappable { cursor: pointer; }
+.lesson-row.tappable:active { opacity: 0.6; }
+
+/* Кнопка заметки справа: область нажатия 44×44 больше самого значка */
+.note-btn {
+  flex-shrink: 0;
+  align-self: center;
+  width: 40px; height: 44px;
+  margin: -8px -10px -8px -4px;
+  display: grid; place-items: center;
+  border: 0; border-radius: 14px;
+  background: transparent;
+  color: var(--text);
+}
+.note-btn:active { background: var(--border); }
+.note-btn.has-note { color: var(--note); }
 .lesson-time {
   display: flex; flex-direction: column;
   min-width: 48px;
@@ -377,7 +426,7 @@ a { color: var(--green-text); }
 }
 .lesson-time-end { color: var(--muted); font-weight: 500; font-size: 14px; }
 .lesson-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.lesson-subject { font-size: 16px; font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
+.lesson-subject { font-size: 16px; font-weight: 600; line-height: 1.25; overflow-wrap: break-word; hyphens: auto; -webkit-hyphens: auto; }
 .lesson-details { font-size: 14px; color: var(--muted); line-height: 1.35; overflow-wrap: anywhere; }
 
 .tags { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -441,7 +490,7 @@ a { color: var(--green-text); }
 .settings-group { flex-direction: row; align-items: center; justify-content: space-between; gap: 12px; }
 .settings-group-code { font-size: 24px; font-weight: 800; }
 /* Раскрывающийся блок "О приложении" */
-.card.about { padding: 0; gap: 0; margin-top: 12px; }
+.card.about { padding: 0; gap: 0; border-radius: 26px; }
 .about-toggle {
   display: flex; align-items: center; justify-content: space-between;
   width: 100%; min-height: 56px; padding: 0 16px;
@@ -454,14 +503,30 @@ a { color: var(--green-text); }
 .settings-feedback-title { font-size: 17px; font-weight: 700; margin-bottom: 2px; }
 .settings-group .button-secondary { flex-shrink: 0; }
 
+/* Карточка-виджет: заголовок, текст и широкая кнопка внутри */
+.widget { padding: 18px 16px 16px; border-radius: 26px; gap: 6px; }
+.widget-title { font-size: 20px; font-weight: 800; }
+.widget-button {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; min-height: 54px; margin-top: 8px;
+  border: 0; border-radius: 18px;
+  background: var(--surface-2);
+  font-size: 17px; font-weight: 700;
+}
+.widget-button:active { transform: scale(0.98); }
+.widget-icon {
+  display: grid; place-items: center;
+  width: 30px; height: 30px; border-radius: 9px;
+  background: var(--hero); color: var(--on-hero);
+}
+.widget-icon.telegram { background: #2AABEE; color: #fff; }
+/* Нижние блоки — спокойнее: меньше заголовок, отступ сверху */
+.settings-section { margin-top: 16px; }
+.widget.quiet .widget-title { font-size: 17px; }
+
 /* ---------- Нижнее меню ---------- */
 
-/*
-  Плавающая зелёная панель: сразу видна на любом экране и в любой теме.
-  Активная вкладка — белая "таблетка" с зелёной иконкой, остальные —
-  белые иконки на зелёном. Так пользователь не ищет меню: оно самый
-  яркий элемент внизу экрана.
-*/
+/* Стекло цвета фона; выбранная вкладка — зелёное стекло */
 .bottom-nav {
   position: fixed;
   left: 12px; right: 12px;
@@ -472,9 +537,12 @@ a { color: var(--green-text); }
   display: flex;
   gap: 6px;
   padding: 6px;
-  background: var(--green);
-  border-radius: 24px;
-  box-shadow: 0 8px 28px rgba(0, 70, 35, 0.35);
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
+  backdrop-filter: blur(22px) saturate(170%);
+  border: 1px solid var(--glass-border);
+  border-radius: 26px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
   z-index: 10;
 }
 .nav-item {
@@ -485,15 +553,21 @@ a { color: var(--green-text); }
   justify-content: center;
   gap: 3px;
   border: 0;
-  border-radius: 18px;
+  border-radius: 20px;
   background: transparent;
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--muted);
   font-size: 12px;
   font-weight: 700;
-  transition: background-color .15s, color .15s, transform .1s;
+  transition: background-color .2s, color .2s, transform .1s;
 }
 .nav-item svg { width: 24px; height: 24px; }
-.nav-item.active { background: rgba(0, 0, 0, 0.28); color: #FFFFFF; }  /* тёмно-зелёная подсветка поверх зелёной панели */
+.nav-item.active {
+  background: var(--glass-active);
+  color: var(--on-hero);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
 .nav-item:active { transform: scale(0.95); }
 
 .offline-banner {
@@ -508,3 +582,72 @@ a { color: var(--green-text); }
 
 /* Неделя практики: вместо пар одна строка в фирменном цвете */
 .week-note { color: var(--green-text); font-weight: 600; font-size: 15px; }
+
+/* ---------- Окно заметки ---------- */
+
+.sheet-backdrop {
+  position: fixed; left: 0; right: 0; top: 0; height: 100%;
+  z-index: 100;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.3);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  animation: fade-in .2s ease-out;
+}
+.sheet {
+  width: 100%; max-width: 420px; max-height: 100%; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 12px;
+  padding: 20px 16px 16px;
+  border-radius: 28px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: pop-in .22s cubic-bezier(.2, .9, .3, 1.2);
+}
+@keyframes fade-in { from { opacity: 0; } }
+@keyframes pop-in { from { opacity: 0; transform: scale(0.94); } }
+
+.sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 4px; }
+.sheet-head h2 { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
+.sheet-delete {
+  width: 40px; height: 40px; display: grid; place-items: center;
+  border: 0; border-radius: 12px; background: var(--surface-2); color: #E5484D;
+}
+.sheet-lesson { padding: 0 4px; color: var(--muted); font-size: 15px; overflow-wrap: anywhere; }
+.sheet-lesson b { color: var(--text); }
+.sheet-lesson small { display: block; font-size: 13px; margin-top: 2px; }
+
+.sheet-input {
+  width: 100%; min-height: 110px; resize: none;
+  padding: 12px 14px;
+  border: 1px solid var(--border); border-radius: 18px;
+  background: var(--surface-2); color: var(--text);
+  font: inherit; font-size: 17px; line-height: 1.4;   /* ≥16px — iPhone не приближает */
+  outline: none;
+}
+.sheet-input:focus { border-color: var(--hero); }
+.sheet-input::placeholder { color: var(--muted); }
+
+.sheet-options { display: flex; flex-direction: column; gap: 6px; }
+.sheet-option {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  width: 100%; min-height: 54px; padding: 8px 14px;
+  border: 1px solid transparent; border-radius: 16px;
+  background: var(--surface-2); text-align: left;
+}
+.sheet-option span { display: flex; flex-direction: column; gap: 1px; }
+.sheet-option b { font-size: 15px; }
+.sheet-option small { font-size: 13px; color: var(--muted); }
+.sheet-option.active { border-color: var(--hero); }
+.sheet-option svg { flex-shrink: 0; color: var(--hero); }
+
+.sheet-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+.sheet-buttons button {
+  min-height: 52px; border: 0; border-radius: 18px;
+  font-size: 17px; font-weight: 700;
+}
+.sheet-cancel { background: var(--surface-2); }
+.sheet-save { background: var(--hero); color: var(--on-hero); }
+.sheet-save:disabled { opacity: 0.45; }
+.sheet-buttons button:active:not(:disabled) { transform: scale(0.98); }
