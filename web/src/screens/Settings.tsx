@@ -3,10 +3,11 @@
 
   Плюс блок "О приложении" с пометкой о неофициальности и источником данных.
 */
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Disclaimer } from '../components/Disclaimer'
 import { IconChevron, IconGroup, IconMessage, IconStudy, IconTelegram } from '../components/Icons'
 import { hapticSelect, openLink, openTelegramLink } from '../lib/telegram'
+import { THEMES } from '../lib/themes'
 import type { GroupSchedule, ThemePreference } from '../types'
 
 /** Куда пишут об ошибках в расписании и предложения */
@@ -16,12 +17,14 @@ const CHANNEL_URL = 'https://t.me/studentsbgufk'
 /** Дистанционное обучение БГУФК */
 const DISTANCE_URL = 'https://touredu.by/login/index.php'
 
-// "Авто" = как тема в Telegram
-const THEMES: { id: ThemePreference; label: string }[] = [
-  { id: 'dark', label: 'Тёмная' },
-  { id: 'light', label: 'Светлая' },
-  { id: 'system', label: 'Авто' },
-]
+/** Мини-превью темы: виджет сверху, карточка снизу — цвета берутся из самой темы */
+function Swatch({ palette }: { palette: string }) {
+  return (
+    <span className="swatch" data-palette={palette} aria-hidden="true">
+      <i /><b />
+    </span>
+  )
+}
 
 interface Props {
   groupCode: string
@@ -33,6 +36,14 @@ interface Props {
 
 export function Settings({ groupCode, schedule, theme, onThemeChange, onChangeGroup }: Props) {
   const [aboutOpen, setAboutOpen] = useState(false)
+
+  // Выбранная тема может быть в конце ленты — при открытии прокручиваем к ней (только по горизонтали)
+  const themeRow = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const row = themeRow.current
+    const tile = row?.querySelector<HTMLElement>('.theme-tile.active')
+    if (row && tile) row.scrollLeft = tile.offsetLeft - row.clientWidth / 2 + tile.offsetWidth / 2
+  }, [])
   // Дата обновления данных парсером — понятным языком ("8 ноября, 22:44").
   const updated = schedule
     ? new Date(schedule.generatedAt).toLocaleString('ru-RU', {
@@ -57,14 +68,21 @@ export function Settings({ groupCode, schedule, theme, onThemeChange, onChangeGr
         </button>
       </div>
 
-      <div className="segmented" role="radiogroup" aria-label="Тема оформления">
-        {THEMES.map(({ id, label }) => (
-          <button key={id} type="button" role="radio" aria-checked={theme === id}
-                  className={theme === id ? 'segment active' : 'segment'}
-                  onClick={() => { hapticSelect(); onThemeChange(id) }}>
-            {label}
-          </button>
-        ))}
+      <div className="card widget">
+        <p className="widget-title">Оформление</p>
+        <div className="theme-row" role="radiogroup" aria-label="Тема оформления" ref={themeRow}>
+          {/* «Авто» — как в Telegram: половина светлой, половина тёмной */}
+          {[{ id: 'system' as const, label: 'Авто' }, ...THEMES].map(({ id, label }) => (
+            <button key={id} type="button" role="radio" aria-checked={theme === id}
+                    className={theme === id ? 'theme-tile active' : 'theme-tile'}
+                    onClick={() => { hapticSelect(); onThemeChange(id) }}>
+              {id === 'system'
+                ? <span className="swatch-split"><Swatch palette="light" /><Swatch palette="dark" /></span>
+                : <Swatch palette={id} />}
+              <span className="theme-name">{label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="card widget">

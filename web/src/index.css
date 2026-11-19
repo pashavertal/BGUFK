@@ -15,7 +15,7 @@
   поэтому для текста берём более светлый оттенок (--green-text).
 */
 
-:root {
+:root, [data-palette="light"] {
   --green: #00703C;            /* фирменный зелёный — фон виджета, кнопки */
   --green-text: #00703C;       /* зелёный для текста и акцентов */
   --green-soft: #E3F1E9;       /* бледно-зелёный — подсветка "сегодня" */
@@ -24,7 +24,7 @@
   --bg: #F3F6F4;               /* фон экрана (чуть зеленоватый серый) */
   --surface: #FFFFFF;          /* фон карточек */
   --text: #13201A;             /* основной текст */
-  --muted: #5F6F66;            /* второстепенный текст */
+  --muted: #4A5850;            /* второстепенный текст */
   --border: #DCE5DF;           /* тонкие линии */
   --surface-2: #F3F6F4;        /* окошко пары внутри карточки */
 
@@ -35,6 +35,10 @@
   --glass: rgba(243, 246, 244, 0.72);       /* стеклянное меню: цвет фона, полупрозрачный */
   --glass-border: rgba(0, 0, 0, 0.06);
   --glass-active: rgba(0, 112, 60, 0.92);   /* выбранная вкладка: стекло цвета виджета */
+  --hero-chip: rgba(255, 255, 255, 0.16);   /* метка в виджете */
+  --hero-muted: rgba(255, 255, 255, 0.9);  /* аудитория, преподаватель в виджете */
+  --hero-track: rgba(255, 255, 255, 0.2);   /* дорожка полоски прогресса */
+  --hero-shadow: rgba(0, 112, 60, 0.3);
 
   --radius: 16px;              /* скругление карточек */
   --nav-height: 80px;          /* высота нижнего меню вместе с отступом от края экрана */
@@ -48,7 +52,7 @@
   -webkit-tap-highlight-color: transparent;  /* убрать серую вспышку при тапе на iOS */
 }
 
-:root[data-theme="dark"] {
+:root[data-theme="dark"], [data-palette="dark"] {
   --green: #0B6B3D;
   --green-text: #4CC786;
   --green-soft: #15291F;
@@ -57,7 +61,7 @@
   --bg: #0E1411;
   --surface: #171F1B;
   --text: #E8EFEB;
-  --muted: #93A39A;
+  --muted: #B0BFB7;
   --border: #26322C;
   --surface-2: #1F2924;
 
@@ -68,6 +72,98 @@
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-active: rgba(0, 112, 60, 0.92);
   color-scheme: dark;          /* чтобы поля ввода и скроллбары тоже стали тёмными */
+}
+
+
+/* ---------- Цветовые темы (выбор в настройках) ----------
+   Каждая тема переопределяет палитру. Работает и на <html>, и на плитке-превью. */
+:root[data-palette="midnight"], [data-palette="midnight"] {
+  --bg: #000000; --surface: #111111; --surface-2: #1C1C1C;
+  --text: #FFFFFF; --muted: #BDBDBD; --border: #262626;
+  --hero: #00703C; --on-hero: #FFFFFF;
+  --green: #00703C; --on-green: #FFFFFF; --green-text: #4CC786; --green-soft: #0F2419;
+  --glass: rgba(0, 0, 0, 0.72); --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-active: rgba(0, 112, 60, 0.92);
+  --hero-chip: rgba(255, 255, 255, 0.16);
+  --hero-muted: rgba(255, 255, 255, 0.9); --hero-track: rgba(255, 255, 255, 0.2); --hero-shadow: rgba(0, 112, 60, 0.25);
+  color-scheme: dark;
+}
+:root[data-palette="contrast"], [data-palette="contrast"] {
+  --bg: #000000; --surface: #0D0D0D; --surface-2: #1A1A1A;
+  --text: #FFFFFF; --muted: #E0E0E0; --border: #3A3A3A;
+  --hero: #FFD60A; --on-hero: #000000;
+  --green: #FFD60A; --on-green: #000000; --green-text: #FFD60A; --green-soft: #2A2400;
+  --glass: rgba(0, 0, 0, 0.72); --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-active: rgba(255, 214, 10, 0.92);
+  --hero-chip: rgba(0, 0, 0, 0.1);
+  --hero-muted: rgba(0, 0, 0, 0.9); --hero-track: rgba(0, 0, 0, 0.2); --hero-shadow: rgba(255, 214, 10, 0.25);
+  color-scheme: dark;
+}
+:root[data-palette="beige"], [data-palette="beige"] {
+  --bg: #F3EEE4; --surface: #FFFBF3; --surface-2: #F1EADD;
+  --text: #1E1A14; --muted: #564E43; --border: #E4DACB;
+  --hero: #1E1A14; --on-hero: #FFF6E6;
+  --green: #1E1A14; --on-green: #FFF6E6; --green-text: #7A5A2E; --green-soft: #EDE3D2;
+  --glass: rgba(243, 238, 228, 0.72); --glass-border: rgba(0, 0, 0, 0.06);
+  --glass-active: rgba(30, 26, 20, 0.92);
+  --hero-chip: rgba(255, 255, 255, 0.16);
+  --hero-muted: rgba(255, 246, 230, 0.9); --hero-track: rgba(255, 246, 230, 0.2); --hero-shadow: rgba(30, 26, 20, 0.25);
+  color-scheme: light;
+}
+:root[data-palette="sky"], [data-palette="sky"] {
+  --bg: #DCEFFB; --surface: #F4FAFF; --surface-2: #E6F3FC;
+  --text: #0A2540; --muted: #3A5570; --border: #C5DDF0;
+  --hero: #0A2E57; --on-hero: #E6F3FC;
+  --green: #0A2E57; --on-green: #E6F3FC; --green-text: #0A4A8A; --green-soft: #CFE6F7;
+  --glass: rgba(220, 239, 251, 0.72); --glass-border: rgba(0, 0, 0, 0.06);
+  --glass-active: rgba(10, 46, 87, 0.92);
+  --hero-chip: rgba(255, 255, 255, 0.16);
+  --hero-muted: rgba(230, 243, 252, 0.9); --hero-track: rgba(230, 243, 252, 0.2); --hero-shadow: rgba(10, 46, 87, 0.25);
+  color-scheme: light;
+}
+:root[data-palette="azure"], [data-palette="azure"] {
+  --bg: #0A1426; --surface: #12203A; --surface-2: #1A2B4A;
+  --text: #EAF1FF; --muted: #B7C6E0; --border: #22355A;
+  --hero: #9FD3F5; --on-hero: #062038;
+  --green: #9FD3F5; --on-green: #062038; --green-text: #9FD3F5; --green-soft: #16304F;
+  --glass: rgba(10, 20, 38, 0.72); --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-active: rgba(159, 211, 245, 0.92);
+  --hero-chip: rgba(0, 0, 0, 0.1);
+  --hero-muted: rgba(6, 32, 56, 0.9); --hero-track: rgba(6, 32, 56, 0.2); --hero-shadow: rgba(159, 211, 245, 0.25);
+  color-scheme: dark;
+}
+:root[data-palette="mint"], [data-palette="mint"] {
+  --bg: #1E2224; --surface: #272C2E; --surface-2: #313739;
+  --text: #EEF7F3; --muted: #BDC8C4; --border: #3A4143;
+  --hero: #A8F0D4; --on-hero: #0B2A20;
+  --green: #A8F0D4; --on-green: #0B2A20; --green-text: #A8F0D4; --green-soft: #23382F;
+  --glass: rgba(30, 34, 36, 0.72); --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-active: rgba(168, 240, 212, 0.92);
+  --hero-chip: rgba(0, 0, 0, 0.1);
+  --hero-muted: rgba(11, 42, 32, 0.9); --hero-track: rgba(11, 42, 32, 0.2); --hero-shadow: rgba(168, 240, 212, 0.25);
+  color-scheme: dark;
+}
+:root[data-palette="ultra"], [data-palette="ultra"] {
+  --bg: #15122A; --surface: #1F1A3A; --surface-2: #2A2450;
+  --text: #F1EEFF; --muted: #C4BDE6; --border: #332C5E;
+  --hero: #C6F432; --on-hero: #1A2400;
+  --green: #C6F432; --on-green: #1A2400; --green-text: #C6F432; --green-soft: #2B3415;
+  --glass: rgba(21, 18, 42, 0.72); --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-active: rgba(198, 244, 50, 0.92);
+  --hero-chip: rgba(0, 0, 0, 0.1);
+  --hero-muted: rgba(26, 36, 0, 0.9); --hero-track: rgba(26, 36, 0, 0.2); --hero-shadow: rgba(198, 244, 50, 0.25);
+  color-scheme: dark;
+}
+:root[data-palette="indigo"], [data-palette="indigo"] {
+  --bg: #181A4A; --surface: #23266A; --surface-2: #2E3282;
+  --text: #EEF0FF; --muted: #C6C9F0; --border: #383D93;
+  --hero: #FFB703; --on-hero: #2A1800;
+  --green: #FFB703; --on-green: #2A1800; --green-text: #FFB703; --green-soft: #3B3320;
+  --glass: rgba(24, 26, 74, 0.72); --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-active: rgba(255, 183, 3, 0.92);
+  --hero-chip: rgba(0, 0, 0, 0.1);
+  --hero-muted: rgba(42, 24, 0, 0.9); --hero-track: rgba(42, 24, 0, 0.2); --hero-shadow: rgba(255, 183, 3, 0.25);
+  color-scheme: dark;
 }
 
 /* box-sizing: border-box — ширина элемента включает отступы и рамку.
@@ -330,28 +426,28 @@ a { color: var(--green-text); }
 /* Яркий виджет */
 .hero {
   position: relative;
-  display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
-  padding: 18px 20px 22px;
-  border-radius: 26px;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 12px;
+  padding: 22px 22px 24px;
+  border-radius: 28px;
   background: var(--hero);
   color: var(--on-hero);
-  box-shadow: 0 12px 36px rgba(0, 112, 60, 0.3);
-  overflow: hidden;
+  box-shadow: 0 12px 36px var(--hero-shadow);
 }
 .hero-chip {
   display: inline-flex; align-items: center; gap: 7px;
-  padding: 5px 12px; border-radius: 999px;
-  background: rgba(255, 255, 255, 0.16);
+  padding: 6px 13px; border-radius: 999px;
+  background: var(--hero-chip);
   color: var(--on-hero);
-  font-size: 14px; font-weight: 700;
+  font-size: 15px; font-weight: 700;
 }
-.hero-title { font-size: 28px; line-height: 1.12; font-weight: 800; letter-spacing: -0.02em; overflow-wrap: break-word; hyphens: auto; -webkit-hyphens: auto; }
-.hero-line { font-size: 16px; line-height: 1.4; font-weight: 600; color: rgba(255, 255, 255, 0.82); overflow-wrap: anywhere; }
+.hero-title { font-size: 32px; line-height: 1.1; font-weight: 800; letter-spacing: -0.02em; overflow-wrap: break-word; hyphens: auto; -webkit-hyphens: auto; }
+.hero-line { font-size: 17px; line-height: 1.4; font-weight: 600; color: var(--hero-muted); overflow-wrap: anywhere; }
 .hero-line b { color: var(--on-hero); font-weight: 800; }
-.hero-progress {
-  position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: rgba(255, 255, 255, 0.2);
-}
-.hero-progress > div { height: 100%; background: var(--on-hero); }
+/* Полоска оставшегося времени — внутри виджета, рядом подпись «ещё N мин» */
+.hero-progress-row { align-self: stretch; display: flex; align-items: center; gap: 14px; margin-top: 4px; }
+.hero-progress { flex: 1; height: 8px; border-radius: 999px; background: var(--hero-track); overflow: hidden; }
+.hero-progress > div { height: 100%; border-radius: 999px; background: var(--on-hero); }
+.hero-left { font-size: 16px; font-weight: 800; white-space: nowrap; }
 .live-dot {
   width: 8px; height: 8px; border-radius: 50%;
   background: #E5484D;
@@ -651,3 +747,121 @@ a { color: var(--green-text); }
 .sheet-save { background: var(--hero); color: var(--on-hero); }
 .sheet-save:disabled { opacity: 0.45; }
 .sheet-buttons button:active:not(:disabled) { transform: scale(0.98); }
+
+/* ---------- Выбор темы: лента плиток ---------- */
+
+.theme-row {
+  position: relative;   /* чтобы offsetLeft плиток считался от ленты */
+  display: flex; gap: 10px;
+  margin: 6px -16px 0; padding: 4px 16px 2px;
+  overflow-x: auto; scrollbar-width: none;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 16px;
+}
+.theme-row::-webkit-scrollbar { display: none; }
+.theme-tile {
+  flex-shrink: 0; width: 64px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  border: 0; background: transparent; padding: 0;
+  scroll-snap-align: start;
+}
+.swatch, .swatch-split {
+  width: 58px; height: 70px; border-radius: 16px;
+  border: 2px solid var(--border);
+  overflow: hidden;
+}
+.swatch {
+  display: flex; flex-direction: column; gap: 5px; padding: 6px;
+  background: var(--surface);
+}
+.swatch i, .swatch b { display: block; border-radius: 8px; position: relative; }
+.swatch i { height: 22px; background: var(--hero); }
+.swatch b { flex: 1; background: var(--surface-2); }
+.swatch i::after, .swatch b::before, .swatch b::after {
+  content: ''; position: absolute; left: 7px; height: 3px; border-radius: 2px;
+}
+.swatch i::after { top: 9px; width: 22px; background: var(--on-hero); opacity: 0.85; }
+.swatch b::before { top: 8px; width: 26px; background: var(--text); opacity: 0.5; }
+.swatch b::after { top: 15px; width: 16px; background: var(--text); opacity: 0.35; }
+/* «Авто»: две половинки */
+.swatch-split { display: flex; }
+.swatch-split .swatch { width: 50%; height: 100%; border: 0; border-radius: 0; padding: 6px 3px; }
+.swatch-split .swatch i::after, .swatch-split .swatch b::before, .swatch-split .swatch b::after { left: 4px; width: 12px; }
+.theme-name { font-size: 13px; font-weight: 600; color: var(--muted); }
+.theme-tile.active .swatch, .theme-tile.active .swatch-split { border-color: var(--text); }
+.theme-tile.active .swatch-split .swatch { border: 0; }
+.theme-tile.active .theme-name { color: var(--text); font-weight: 800; }
+.theme-tile:active .swatch, .theme-tile:active .swatch-split { transform: scale(0.95); }
+
+:root[data-palette="linen"], [data-palette="linen"] {
+  color-scheme: dark;
+  --bg: #141311; --surface: #201E1B; --surface-2: #302D29;
+  --text: #F6EFE5; --muted: #C7BFB3; --border: #413C36;
+  --hero: #F4EDE3; --on-hero: #171512; --green: var(--hero); --on-green: var(--on-hero);
+  --green-text: #F4EDE3; --green-soft: var(--surface-2);
+  --glass: color-mix(in srgb, var(--bg) 93%, transparent); --glass-border: var(--border);
+  --glass-active: var(--hero); --hero-muted: var(--on-hero);
+  --hero-chip: color-mix(in srgb, var(--on-hero) 10%, transparent);
+  --hero-track: color-mix(in srgb, var(--on-hero) 19%, transparent);
+  --hero-shadow: rgba(0,0,0,.12);
+}
+
+:root[data-palette="paper"], [data-palette="paper"] {
+  color-scheme: light;
+  --bg: #F4EFE6; --surface: #FFFCF6; --surface-2: #EFE9DE;
+  --text: #1C1A17; --muted: #635D53; --border: #D5CFC3;
+  --hero: #201F1D; --on-hero: #FFFDF8; --green: var(--hero); --on-green: var(--on-hero);
+  --green-text: #403A32; --green-soft: var(--surface-2);
+  --glass: color-mix(in srgb, var(--bg) 93%, transparent); --glass-border: var(--border);
+  --glass-active: var(--hero); --hero-muted: var(--on-hero);
+  --hero-chip: color-mix(in srgb, var(--on-hero) 10%, transparent);
+  --hero-track: color-mix(in srgb, var(--on-hero) 19%, transparent);
+  --hero-shadow: rgba(0,0,0,.12);
+}
+
+:root[data-palette="cobalt"], [data-palette="cobalt"] {
+  color-scheme: light;
+  --bg: #EDF0FA; --surface: #FFFFFF; --surface-2: #E6EAF7;
+  --text: #172143; --muted: #4C5777; --border: #C8D0E6;
+  --hero: #264FC7; --on-hero: #FFFFFF; --green: var(--hero); --on-green: var(--on-hero);
+  --green-text: #1C46AE; --green-soft: var(--surface-2);
+  --glass: color-mix(in srgb, var(--bg) 93%, transparent); --glass-border: var(--border);
+  --glass-active: var(--hero); --hero-muted: var(--on-hero);
+  --hero-chip: color-mix(in srgb, var(--on-hero) 10%, transparent);
+  --hero-track: color-mix(in srgb, var(--on-hero) 19%, transparent);
+  --hero-shadow: rgba(0,0,0,.12);
+}
+
+:root[data-palette="graphite"], [data-palette="graphite"] {
+  color-scheme: dark;
+  --bg: #172B33; --surface: #213C46; --surface-2: #2B4A55;
+  --text: #F1F6F6; --muted: #C0D0D4; --border: #49646C;
+  --hero: #F3CE80; --on-hero: #282015; --green: var(--hero); --on-green: var(--on-hero);
+  --green-text: #F3CE80; --green-soft: var(--surface-2);
+  --glass: color-mix(in srgb, var(--bg) 93%, transparent); --glass-border: var(--border);
+  --glass-active: var(--hero); --hero-muted: var(--on-hero);
+  --hero-chip: color-mix(in srgb, var(--on-hero) 10%, transparent);
+  --hero-track: color-mix(in srgb, var(--on-hero) 19%, transparent);
+  --hero-shadow: rgba(0,0,0,.12);
+}
+
+.hero { gap: 10px; padding: 19px 18px 20px; border-radius: 23px; }
+.hero-title { font-size: clamp(24px, 5vw, 30px); max-width: 100%; }
+.hero-chip { padding: 5px 10px; border-radius: 9px; font-size: 13px; }
+.hero-chip.live { background: #BB402C; color: white; }
+.hero-chip.live .live-dot { background: currentColor; animation: none; }
+.hero-details { display: flex; flex-wrap: wrap; gap: 6px; max-width: 100%; }
+.hero-details:empty { display: none; }
+.hero-details + .hero-details { margin-top: -4px; }
+.hero-details span { display: inline-flex; align-items: center; gap: 6px; max-width: 100%;
+  padding: 6px 10px; border-radius: 10px; background: var(--hero-chip);
+  font-size: 15px; line-height: 1.24; font-weight: 700; }
+.hero-details b { min-width: 0; overflow-wrap: anywhere; }
+.hero-details svg { width: 15px; height: 15px; flex: none; }
+.hero-progress-row { margin-top: 6px; }
+.theme-row { padding-block: 7px; }
+.theme-tile { color: var(--text); }
+.theme-tile.active > .swatch, .theme-tile.active > .swatch-split {
+  outline: 2px solid currentColor; outline-offset: 2px;
+}
+.swatch { background: var(--bg); }

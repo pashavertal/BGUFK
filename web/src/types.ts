@@ -1,3 +1,4 @@
+import type { ThemeId } from './lib/themes'
 /*
   ТИПЫ ДАННЫХ — "чертежи" того, как выглядят наши данные.
 
@@ -57,8 +58,6 @@ export interface ScheduleIndex {
 }
 
 /**
-  Тема оформления.
-  Это "объединение строк": переменная может быть ТОЛЬКО одной из трёх строк.
-  Написать theme = 'blue' TypeScript не даст.
+  Тема оформления: 'system' (как в Telegram) или одна из тем из lib/themes.ts.
 */
-export type ThemePreference = 'system' | 'light' | 'dark'
+export type ThemePreference = 'system' | ThemeId

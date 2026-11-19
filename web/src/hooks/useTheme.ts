@@ -11,10 +11,8 @@
 */
 import { useEffect, useState } from 'react'
 import { paintTelegramChrome, telegramColorScheme, tg } from '../lib/telegram'
+import { findTheme } from '../lib/themes'
 import type { ThemePreference } from '../types'
-
-// Цвета фона — те же, что --bg в index.css. Нужны, чтобы покрасить шапку Telegram.
-const BACKGROUND = { light: '#F3F6F4', dark: '#0E1411' } as const
 
 export function useTheme(preference: ThemePreference): 'light' | 'dark' {
   // Тема Telegram может поменяться, пока приложение открыто — следим за ней.
@@ -31,12 +29,16 @@ export function useTheme(preference: ThemePreference): 'light' | 'dark' {
     }
   }, [])
 
-  const resolved = preference === 'system' ? systemScheme : preference
+  // 'system' → обычная светлая/тёмная по Telegram; неизвестное старое значение → тоже
+  const theme = findTheme(preference === 'system' ? systemScheme : preference) ?? findTheme(systemScheme)!
+  const resolved = theme.scheme
 
   useEffect(() => {
-    document.documentElement.dataset.theme = resolved   // <html data-theme="...">
-    paintTelegramChrome(BACKGROUND[resolved])
-  }, [resolved])
+    const html = document.documentElement
+    html.dataset.theme = resolved      // светлая/тёмная основа
+    html.dataset.palette = theme.id    // цвета конкретной темы
+    paintTelegramChrome(theme.bg)
+  }, [resolved, theme.id, theme.bg])
 
   return resolved
 }

@@ -7,7 +7,7 @@
        Прошедшие сегодня пары свёрнуты в «Прошедшие пары · N».
 */
 import { Fragment, useState, type ReactNode } from 'react'
-import { IconChevron } from '../components/Icons'
+import { IconChevron, IconGroup, IconPin, IconToday } from '../components/Icons'
 import { LessonCard } from '../components/LessonCard'
 import { useNow } from '../hooks/useNow'
 import { noteKey, type NoteTarget, type Notes } from '../lib/notes'
@@ -19,7 +19,7 @@ import {
 import type { Day, GroupSchedule, Lesson } from '../types'
 
 type Highlight =
-  | { kind: 'current'; lessons: Lesson[]; minutesLeft: number; progress: number }
+  | { kind: 'current'; lessons: Lesson[] }
   | { kind: 'next'; lessons: Lesson[]; minutesUntil: number }
   | { kind: 'finished' }
   | { kind: 'none' }
@@ -32,13 +32,9 @@ function pickHighlight(lessons: Lesson[], now: Now): Highlight {
     (l) => toMinutes(l.start) <= now.minutes && now.minutes < toMinutes(l.end),
   )
   if (current.length > 0) {
-    const start = toMinutes(current[0].start)
-    const end = toMinutes(current[0].end)
     return {
       kind: 'current',
       lessons: current,
-      minutesLeft: end - now.minutes,
-      progress: (now.minutes - start) / (end - start),
     }
   }
 
@@ -67,36 +63,59 @@ function nextStudyDay(schedule: GroupSchedule, after: string): { date: string; d
   return date ? { date, day: schedule.days[date] } : null
 }
 
-/** "аудитория · преподаватель" */
-function place(lesson: Lesson): string {
-  return [lesson.rooms.join(', '), lesson.teachers.join(', ')].filter(Boolean).join(' · ')
+const bellTimes = ['08:30', '10:10', '12:05', '13:45', '15:25', '17:05', '18:50']
+
+function LessonHighlight({ lesson, live, countdown, progress }: {
+  lesson: Lesson
+  live: boolean
+  countdown: string
+  progress?: number
+}) {
+  const number = bellTimes.indexOf(lesson.start) + 1
+  const status = live ? 'Идёт сейчас' : countdown
+  const title = lesson.subject === lesson.subject.toLocaleUpperCase('ru')
+    ? lesson.subject.charAt(0) + lesson.subject.slice(1).toLocaleLowerCase('ru')
+    : lesson.subject
+
+  return (
+    <Hero chip={number ? `${status} · ${number} пара` : status} live={live}
+          title={lesson.subject.length > 4 ? title : lesson.subject}
+          progress={progress} left={live ? countdown : undefined}>
+      <div className="hero-details">
+        {lesson.subgroup && <span>{lesson.subgroup} подгруппа</span>}
+        {lesson.rooms.length > 0 && <span><IconPin /><b>{lesson.rooms.join(', ')}</b></span>}
+        {lesson.teachers.length > 0 && <span><IconGroup /><b>{lesson.teachers.join(', ')}</b></span>}
+      </div>
+      <div className="hero-details"><span><IconToday />{shortTime(lesson.start)}–{shortTime(lesson.end)}</span></div>
+    </Hero>
+  )
 }
 
-function subjects(lessons: Lesson[]): string {
-  return [...new Set(lessons.map((l) => l.subject))].join(' / ')
-}
-
-/* ---------- Зелёный виджет ---------- */
-
-function Hero({ chip, live, title, line, progress }: {
+function Hero({ chip, live, title, line, progress, left, children }: {
+  children?: ReactNode
   chip: string
   live?: boolean
   title: string
   line?: ReactNode
   progress?: number
+  left?: string   // подпись справа от полоски: «ещё 43 мин»
 }) {
   return (
     <section className="hero" aria-label={chip}>
-      <span className="hero-chip">
+      <span className={live ? "hero-chip live" : "hero-chip"}>
         {live && <span className="live-dot" aria-hidden="true" />}
         {chip}
       </span>
       <h2 className="hero-title">{title}</h2>
+      {children}
       {line && <p className="hero-line">{line}</p>}
       {progress !== undefined && (
-        <div className="hero-progress" role="progressbar" aria-valuemin={0} aria-valuemax={100}
-             aria-valuenow={Math.round(progress * 100)} aria-label="Сколько пары прошло">
-          <div style={{ width: `${progress * 100}%` }} />
+        <div className="hero-progress-row">
+          <div className="hero-progress" role="progressbar" aria-valuemin={0} aria-valuemax={100}
+               aria-valuenow={Math.round(progress * 100)} aria-label="Сколько пары прошло">
+            <div style={{ width: `${progress * 100}%` }} />
+          </div>
+          {left && <span className="hero-left">{left}</span>}
         </div>
       )}
     </section>
@@ -230,15 +249,15 @@ export function Today({ schedule, notes, onNote }: { schedule: GroupSchedule } &
   })()
 
   let hero: ReactNode
-  if (highlight.kind === 'current') {
-    const l = highlight.lessons[0]
-    hero = <Hero live chip={`Сейчас идёт · ещё ${formatDuration(highlight.minutesLeft)}`}
-                 title={subjects(highlight.lessons)} progress={highlight.progress}
-                 line={<><b>до {shortTime(l.end)}</b>{place(l) && ` · ${place(l)}`}</>} />
-  } else if (highlight.kind === 'next') {
-    const l = highlight.lessons[0]
-    hero = <Hero chip={`Через ${formatDuration(highlight.minutesUntil)}`} title={subjects(highlight.lessons)}
-                 line={<><b>{shortTime(l.start)}–{shortTime(l.end)}</b>{place(l) && ` · ${place(l)}`}</>} />
+  if (highlight.kind === 'current' || highlight.kind === 'next') {
+    hero = highlight.lessons.map((lesson, i) => {
+      const remaining = toMinutes(lesson.end) - now.minutes
+      const duration = toMinutes(lesson.end) - toMinutes(lesson.start)
+      const live = highlight.kind === 'current'
+      return <LessonHighlight key={lesson.raw + i} lesson={lesson} live={live}
+               countdown={live ? `ещё ${formatGap(remaining)}` : `Через ${formatDuration(highlight.minutesUntil)}`}
+               progress={live ? 1 - remaining / duration : undefined} />
+    })
   } else if (highlight.kind === 'finished') {
     hero = <Hero chip="Пары закончились" title="На сегодня всё" line={nextLine} />
   } else if (day?.note) {
